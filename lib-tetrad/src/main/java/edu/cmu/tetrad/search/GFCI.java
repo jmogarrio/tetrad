@@ -363,7 +363,7 @@ public final class GFCI {
                     continue;
                 }
 
-                if (!gesGraph.isAdjacentTo(a, c)) {
+                if (gesGraph.isAdjacentTo(a, c)) {
 
                     // Copy colliders from the GES graph into the current graph where possible
                     if (gesGraph.isDefCollider(a, b, c)) {
