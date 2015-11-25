@@ -323,6 +323,8 @@ public final class GFci {
     }
 
     public void ruleR0Special(Graph graph, Graph gesGraph, SepsetProducer sepsets, Fgs ges) {
+        SepsetsMaxPValue sepsetProducer = new SepsetsMaxPValue(graph, independenceTest, null, getDepth());
+
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
 
@@ -350,9 +352,9 @@ public final class GFci {
                 }
 
                 // Skip triples already oriented as colliders
-                if (graph.isDefCollider(a, b, c)) {
-                    continue;
-                }
+//                if (graph.isDefCollider(a, b, c)) {
+//                    continue;
+//                }
 
                 // Skip triple where collider orientations are forbidden by background knowledge
                 if (!isArrowpointAllowed(a, b, graph)) {
@@ -364,22 +366,50 @@ public final class GFci {
                 }
 
                 if (gesGraph.isAdjacentTo(a, c)) {
+//                    SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(a, b, c,
+//                            getIndependenceTest(), depth, graph, verbose);
+//                    if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
+//                        graph.setEndpoint(a, b, Endpoint.ARROW);
+//                        graph.setEndpoint(c, b, Endpoint.ARROW);
+//                        logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+//                        System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+//                    }
 
-                    // Copy colliders from the GES graph into the current graph where possible
+                    if (sepsetProducer.isCollider(a, b, c)) {
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                        logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+                        System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+                    }
+                }
+                else {
                     if (gesGraph.isDefCollider(a, b, c)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                         logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
                         System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
                     }
-                } else {
-                    if (sepsets.isCollider(a, b, c)) {
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
-                        logger.log("colliderOrientations", "On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                        System.out.println("On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                    }
                 }
+
+//                if (!gesGraph.isAdjacentTo(a, c)) {
+//
+//                    // Copy colliders from the GES graph into the current graph where possible
+//                    if (gesGraph.isDefCollider(a, b, c)) {
+//                        graph.setEndpoint(a, b, Endpoint.ARROW);
+//                        graph.setEndpoint(c, b, Endpoint.ARROW);
+//                        logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+//                        System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+//                    }
+//                } else {
+//                    if (sepsets.isCollider(a, b, c)) {
+//                        graph.setEndpoint(a, b, Endpoint.ARROW);
+//                        graph.setEndpoint(c, b, Endpoint.ARROW);
+//                        logger.log("colliderOrientations", "On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+//                        System.out.println("On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+//                    }
+//                }
+
+
             }
         }
     }
