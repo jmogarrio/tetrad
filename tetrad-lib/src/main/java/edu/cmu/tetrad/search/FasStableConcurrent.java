@@ -24,10 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IFas;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchLogUtils;
-import edu.cmu.tetrad.search.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -36,7 +32,6 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
@@ -56,12 +51,6 @@ import java.util.concurrent.RecursiveTask;
  * @author Joseph Ramsey.
  */
 public class FasStableConcurrent implements IFas {
-
-    /**
-     * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
-     * x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
-     */
-    private Graph graph;
 
     /**
      * The independence test. This should be appropriate to the types
@@ -106,17 +95,14 @@ public class FasStableConcurrent implements IFas {
     private boolean verbose = false;
 
     // The concurrency pool.
-    private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+    private ForkJoinPool pool = ForkJoinPool.commonPool();
 
     /**
      * Where verbose output is sent.
      */
     private PrintStream out = System.out;
 
-
-//    private boolean sepsetsRecorded = true;
-
-    int chunk = 100;
+    int chunk = 50;
 
 
     //==========================CONSTRUCTORS=============================//
@@ -143,7 +129,9 @@ public class FasStableConcurrent implements IFas {
     public Graph search() {
         this.logger.log("info", "Starting Fast Adjacency Search.");
 
-        graph = new EdgeListGraphSingleConnections(test.getVariables());
+        // The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
+        // x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
+        Graph graph = new EdgeListGraphSingleConnections(test.getVariables());
 
         sepsets = new SepsetMap();
 
@@ -165,15 +153,13 @@ public class FasStableConcurrent implements IFas {
         }
 
         for (int d = 0; d <= _depth; d++) {
-            boolean more;
-
             if (d == 0) {
-                more = searchAtDepth0(nodes, test, adjacencies);
+                searchAtDepth0(nodes, test, adjacencies);
             } else {
-                more = searchAtDepth(nodes, test, adjacencies, d);
+                searchAtDepth(nodes, test, adjacencies, d);
             }
 
-            if (!more) {
+            if (!freeDegreeGreaterThanDepth(adjacencies, depth)) {
                 break;
             }
         }
@@ -197,7 +183,9 @@ public class FasStableConcurrent implements IFas {
             out.println("Finished constructing Graph.");
         }
 
-        this.logger.log("info", "Finishing Fast Adjacency Search.");
+        if (verbose) {
+            this.logger.log("info", "Finishing Fast Adjacency Search.");
+        }
 
         return graph;
     }
@@ -290,7 +278,7 @@ public class FasStableConcurrent implements IFas {
 
     //==============================PRIVATE METHODS======================/
 
-    private boolean searchAtDepth0(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies) {
+    private void searchAtDepth0(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies) {
         if (verbose) {
             out.println("Searching at depth 0.");
             System.out.println("Searching at depth 0.");
@@ -313,7 +301,9 @@ public class FasStableConcurrent implements IFas {
             protected Boolean compute() {
                 if (to - from <= chunk) {
                     for (int i = from; i < to; i++) {
-                        if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
+                        if (verbose) {
+                            if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
+                        }
 
                         final Node x = nodes.get(i);
 
@@ -355,7 +345,6 @@ public class FasStableConcurrent implements IFas {
                                     out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
                                             nf.format(test.getPValue()));
                                 }
-
                             } else if (!forbiddenEdge(x, y)) {
                                 adjacencies.get(x).add(y);
                                 adjacencies.get(y).add(x);
@@ -385,8 +374,6 @@ public class FasStableConcurrent implements IFas {
         }
 
         pool.invoke(new Depth0Task(chunk, 0, nodes.size()));
-
-        return freeDegreeGreaterThanDepth(adjacencies, 0);
     }
 
     private boolean forbiddenEdge(Node x, Node y) {
@@ -418,7 +405,7 @@ public class FasStableConcurrent implements IFas {
         return false;
     }
 
-    private boolean searchAtDepth(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies,
+    private void searchAtDepth(final List<Node> nodes, final IndependenceTest test, final Map<Node, Set<Node>> adjacencies,
                                   final int depth) {
 
         if (verbose) {
@@ -429,7 +416,7 @@ public class FasStableConcurrent implements IFas {
         final Map<Node, Set<Node>> adjacenciesCopy = new HashMap<Node, Set<Node>>();
 
         for (Node node : adjacencies.keySet()) {
-            adjacenciesCopy.put(node, new HashSet<Node>(adjacencies.get(node)));
+            adjacenciesCopy.put(node, new HashSet<>(adjacencies.get(node)));
         }
 
         class DepthTask extends RecursiveTask<Boolean> {
@@ -451,30 +438,29 @@ public class FasStableConcurrent implements IFas {
                             if ((i + 1) % 1000 == 0) System.out.println("i = " + (i + 1));
                         }
 
+                        Node x = nodes.get(i);
+
+                        List<Node> adjx = new ArrayList<>(adjacenciesCopy.get(x));
+
                         EDGE:
-                        for (int j = i + 1; j < nodes.size(); j++) {
-                            Node x = nodes.get(i);
-                            Node y = nodes.get(j);
+                        for (Node y : adjx) {
+                            List<Node> _adjx = new ArrayList<>(adjx);
+                            _adjx.remove(y);
+                            List<Node> ppx = possibleParents(x, _adjx, knowledge);
 
-                            if (!adjacenciesCopy.get(x).contains(y)) continue;
-
-                            List<Node> adjx = new ArrayList<Node>(adjacenciesCopy.get(x));
-                            adjx.remove(y);
-                            adjx = possibleParents(x, adjx, knowledge);
-
-                            if (adjx.size() >= depth) {
-                                ChoiceGenerator cg = new ChoiceGenerator(adjx.size(), depth);
+                            if (ppx.size() >= depth) {
+                                ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
                                 int[] choice;
 
                                 while ((choice = cg.next()) != null) {
-                                    List<Node> condSet = GraphUtils.asList(choice, adjx);
+                                    List<Node> condSet = GraphUtils.asList(choice, ppx);
 
                                     boolean independent;
 
                                     try {
+                                        numIndependenceTests++;
                                         independent = test.isIndependent(x, y, condSet);
                                     } catch (Exception e) {
-                                        e.printStackTrace();
                                         independent = false;
                                     }
 
@@ -484,52 +470,16 @@ public class FasStableConcurrent implements IFas {
                                     if (independent && noEdgeRequired) {
                                         adjacencies.get(x).remove(y);
                                         adjacencies.get(y).remove(x);
+
                                         getSepsets().set(x, y, condSet);
 
                                         if (verbose) {
                                             TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
                                                     nf.format(test.getPValue()));
-                                            out.println(SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-                                                    nf.format(test.getPValue()));
+                                            out.println(SearchLogUtils.independenceFactMsg(x, y, condSet, test.getPValue()));
                                         }
 
                                         continue EDGE;
-                                    }
-                                }
-                            }
-
-                            List<Node> adjy = new ArrayList<Node>(adjacenciesCopy.get(y));
-                            adjy.remove(x);
-                            adjy = possibleParents(y, adjy, knowledge);
-
-                            if (adjy.size() >= depth) {
-                                ChoiceGenerator cg2 = new ChoiceGenerator(adjy.size(), depth);
-                                int[] choice2;
-
-                                boolean independent;
-
-                                while ((choice2 = cg2.next()) != null) {
-                                    List<Node> condSet = GraphUtils.asList(choice2, adjy);
-
-                                    try {
-                                        independent = test.isIndependent(x, y, condSet);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                        independent = false;
-                                    }
-
-                                    if (independent) {
-                                        adjacencies.get(x).remove(y);
-                                        adjacencies.get(y).remove(x);
-                                        getSepsets().set(x, y, condSet);
-
-                                        continue EDGE;
-                                    }
-                                    else {
-                                        if (verbose) {
-                                            TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, condSet,
-                                                    test.getPValue()) + " p = " + nf.format(test.getPValue()));
-                                        }
                                     }
                                 }
                             }
@@ -557,8 +507,6 @@ public class FasStableConcurrent implements IFas {
         if (verbose) {
             System.out.println("Done with depth");
         }
-
-        return freeDegreeGreaterThanDepth(adjacencies, depth);
     }
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
