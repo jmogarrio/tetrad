@@ -29,7 +29,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TimerTask;
 
 /**
  * <p>Implements the procedure Factored-Bayesian-SEM found on page 6 of "The
@@ -69,7 +72,6 @@ public final class FactoredBayesStructuralEM {
     private Graph resultGraph = new EdgeListGraph();
 
     private int timeout = -1;
-    private double start = -1;
     private int totaliterations = 0;
 
     public FactoredBayesStructuralEM(DataSet dataSet,
@@ -280,7 +282,7 @@ public final class FactoredBayesStructuralEM {
      */
     public BayesIm iterate() {
 
-        start = System.currentTimeMillis();
+        double start = System.currentTimeMillis();
 
         //boolean convergence = false;        //Vestige
         BdeMetricCache bdeMetricCache = new BdeMetricCache(dataSet, bayesPmM0);
@@ -288,32 +290,23 @@ public final class FactoredBayesStructuralEM {
         BayesPm bayesPmMnplus1 = bayesPmM0;
 
         //BayesIm bayesImMn = null;         //Vestige
-        BayesPm bayesPmMn = null;
+        BayesPm bayesPmMn;
         double oldBestScore = Double.NEGATIVE_INFINITY;
         int iteration = 0;
 
-        //stop iterating if timeout has exceeded
-        Timer timer = new Timer();
-
         //Loop for n = 0,1,... until convergence or timeout has been exceeded
 
-        TimedIterate ti = new TimedIterate(bdeMetricCache, bayesPmMnplus1, bayesPmMn, oldBestScore, iteration, start);
+        TimedIterate ti = new TimedIterate(bdeMetricCache, bayesPmMnplus1, oldBestScore, iteration, start);
         Thread tithread = new Thread(ti);
         tithread.start();
-        if (timeout > 0) {
-            //    timer.schedule(new InterruptScheduler(Thread.currentThread()), timeout);
-        }
         try {
             tithread.join();
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
-        bdeMetricCache = ti.bdeMetricCache;
         bayesPmMnplus1 = ti.bayesPmMnplus1;
-        bayesPmMn = ti.bayesPmMn;
         oldBestScore = ti.oldBestScore;
-        iteration = ti.iteration;
         bayesPmMn = bayesPmMnplus1;
         resultScore = oldBestScore;
         totaliterations = ti.iteration;
@@ -467,7 +460,7 @@ public final class FactoredBayesStructuralEM {
 
         for (Node node1 : nodes) {
             List<Node> parents = dag.getParents(node1);
-            Set<Node> parentsSet = new HashSet<Node>(parents);
+            Set<Node> parentsSet = new HashSet<>(parents);
             double fScore = bdeMetricCache.scoreLnGam(node1, parentsSet,
                     bayesPm, bayesIm);
 
@@ -499,17 +492,17 @@ public final class FactoredBayesStructuralEM {
 
     private class TimedIterate implements Runnable {
 
-        BdeMetricCache bdeMetricCache;
+        final BdeMetricCache bdeMetricCache;
         BayesPm bayesPmMnplus1;
         BayesPm bayesPmMn;
         double oldBestScore;
         int iteration;
-        double start;
+        final double start;
 
-        public TimedIterate(BdeMetricCache bdeMetricCache, BayesPm bayesPmMnplus1, BayesPm bayesPmMn, double oldBestScore, int iteration, double start) {
+        public TimedIterate(BdeMetricCache bdeMetricCache, BayesPm bayesPmMnplus1, double oldBestScore, int iteration, double start) {
             this.bdeMetricCache = bdeMetricCache;
             this.bayesPmMnplus1 = bayesPmMnplus1;
-            this.bayesPmMn = bayesPmMn;
+            this.bayesPmMn = null;
             this.oldBestScore = oldBestScore;
             this.iteration = iteration;
             this.start = start;
@@ -527,7 +520,7 @@ public final class FactoredBayesStructuralEM {
 
                 bayesPmMn = bayesPmMnplus1;
                 TetradLogger.getInstance().log("details", "In Factored Bayes Struct EM Iteration number " +
-                                iteration);
+                        iteration);
 
                 //Compute the MAP parameters for Mn given o.
                 TetradLogger.getInstance().log("details", "Starting EM Bayes estimator to get MAP parameters of Mn");
@@ -596,7 +589,7 @@ public final class FactoredBayesStructuralEM {
 
                 TetradLogger.getInstance().log("details", "In iteration:  " + iteration);
                 TetradLogger.getInstance().log("details", "bestScore, oldBestScore " + bestScore + " " +
-                                oldBestScore);
+                        oldBestScore);
                 EdgeListGraph edgesBest =
                         new EdgeListGraph(bayesPmMnplus1.getDag());
                 TetradLogger.getInstance().log("details", "Graph of model:  \n" + edgesBest);
