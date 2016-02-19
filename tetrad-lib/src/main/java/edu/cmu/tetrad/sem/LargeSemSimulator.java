@@ -36,6 +36,7 @@ import org.apache.commons.math3.random.*;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
@@ -55,6 +56,8 @@ public final class LargeSemSimulator {
     private double[][] coefs;
     private double[] errorVars;
     private double[] means;
+
+    private HashMap<Edge, Double> edgeCoefs;
 
     /**
      * Used for some linear algebra calculations.
@@ -83,6 +86,7 @@ public final class LargeSemSimulator {
         this.graph = graph;
         this.variableNodes = nodes;
         this.tierIndices = tierIndices;
+        this.edgeCoefs = new HashMap<>();
 
         if (graph instanceof SemGraph) {
             ((SemGraph) graph).setShowErrorTerms(false);
@@ -97,6 +101,7 @@ public final class LargeSemSimulator {
         this.graph = graph;
         this.variableNodes = nodes;
         this.tierIndices = tierIndices;
+        this.edgeCoefs = new HashMap<>();
 
         if (graph instanceof SemGraph) {
             ((SemGraph) graph).setShowErrorTerms(false);
@@ -165,7 +170,7 @@ public final class LargeSemSimulator {
             System.arraycopy(coefs, 0, newCoefs, 0, coefs.length);
 
             newCoefs[newCoefs.length - 1] = edgeCoefDist.nextRandom();
-
+            edgeCoefs.put(edge, newCoefs[newCoefs.length - 1]);
             this.parents[_head] = newParents;
             this.coefs[_head] = newCoefs;
         }
@@ -364,6 +369,10 @@ public final class LargeSemSimulator {
         return algebra;
     }
 
+    public double getCoef(Edge edge){
+        return edgeCoefs.get(edge);
+    }
+
     public Graph getGraph() {
         return graph;
     }
@@ -387,7 +396,6 @@ public final class LargeSemSimulator {
     }
 
 }
-
 
 
 
