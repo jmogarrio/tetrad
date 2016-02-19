@@ -12,6 +12,146 @@ import java.util.*;
  */
 public class JmoMeasurementUtils {
 
+    static class ConnectivityMeasurements {
+        final int maxIndegree;
+        final int minIndegree;
+        final int maxOutdegree;
+        final int minOutdegree;
+        final int maxDegree;
+        final int minDegree;
+        final int maxAmbdegree;
+        final int minAmbdegree;
+        final double avgDegree;
+        final double stdDegree;
+        final double avgIndegree;
+        final double stdIndegree;
+        final double avgOutdegree;
+        final double stdOutdegree;
+        final double avgAmbdegree;
+        final double stdAmbdegree;
+        final Graph graph;
+
+        private static int getIndegree(Graph graph, Node node){
+            List<Edge> adjacent = graph.getEdges(node);
+
+            int i = 0;
+
+            for(Edge edge : adjacent){
+                Endpoint prox = edge.getProximalEndpoint(node);
+                if (prox == Endpoint.ARROW)
+                    i++;
+            }
+
+            return i;
+        }
+
+        private static int getOutdegree(Graph graph, Node node){
+            List<Edge> adjacent = graph.getEdges(node);
+
+            int i = 0;
+
+            for(Edge edge : adjacent){
+                Endpoint prox = edge.getProximalEndpoint(node);
+                if (prox == Endpoint.TAIL)
+                    i++;
+            }
+
+            return i;
+        }
+
+        ConnectivityMeasurements(Graph graph){
+            this.graph = graph;
+
+            int maxDegree = 0;
+            int maxIndegree = 0;
+            int maxOutdegree = 0;
+            int maxAmbdegree = 0;
+            int minDegree = graph.getNumNodes();
+            int minIndegree = graph.getNumNodes();
+            int minOutdegree = graph.getNumNodes();
+            int minAmbdegree = graph.getNumNodes();
+            int degrees = 0;
+            int outdegrees = 0;
+            int indegrees = 0;
+            int ambdegrees = 0;
+
+            for (Node node : graph.getNodes()) {
+                int d = graph.getAdjacentNodes(node).size();
+                if (d > maxDegree) maxDegree = d;
+                if (d < minDegree) minDegree = d;
+                degrees += d;
+
+                int i = getIndegree(graph, node);
+                if (i > maxIndegree) maxIndegree = i;
+                if (i < minIndegree) minIndegree = i;
+                indegrees += i;
+
+                int o = getOutdegree(graph, node);
+                if (o > maxOutdegree) maxOutdegree = o;
+                if (o < minOutdegree) minOutdegree = o;
+                outdegrees += o;
+
+                int a = getAmbdegree(graph, node);
+                if (a > maxAmbdegree) maxAmbdegree = a;
+                if (a < minAmbdegree) minAmbdegree = a;
+                ambdegrees += a;
+
+            }
+
+            this.maxDegree = maxDegree;
+            this.minDegree = minDegree;
+            this.maxOutdegree = maxOutdegree;
+            this.minOutdegree = minOutdegree;
+            this.maxIndegree = maxIndegree;
+            this.minIndegree = minIndegree;
+            this.maxAmbdegree = maxAmbdegree;
+            this.minAmbdegree = minAmbdegree;
+
+            this.avgDegree = degrees / (double) graph.getNumNodes();
+            this.avgIndegree = indegrees / (double) graph.getNumNodes();
+            this.avgOutdegree = outdegrees / (double) graph.getNumNodes();
+            this.avgAmbdegree = ambdegrees / (double) graph.getNumNodes();
+
+            double degreeErrors = 0;
+            double indegreeErrors = 0;
+            double outdegreeErrors = 0;
+            double ambdegreeErrors = 0;
+
+            for (Node node : graph.getNodes()) {
+                int d = graph.getAdjacentNodes(node).size();
+                degreeErrors += Math.pow(d - avgDegree, 2);
+
+                int i = getIndegree(graph, node);
+                indegreeErrors += Math.pow(i - avgIndegree, 2);
+
+                int o = getOutdegree(graph, node);
+                outdegreeErrors += Math.pow(o - avgOutdegree, 2);
+
+                int a = getAmbdegree(graph, node);
+                ambdegreeErrors += Math.pow(a - avgAmbdegree, 2);
+            }
+
+            this.stdDegree = Math.sqrt(degreeErrors / graph.getNumNodes());
+            this.stdIndegree = Math.sqrt(indegreeErrors/ graph.getNumNodes());
+            this.stdOutdegree = Math.sqrt(outdegreeErrors/ graph.getNumNodes());
+            this.stdAmbdegree = Math.sqrt(ambdegreeErrors/ graph.getNumNodes());
+        }
+
+        private int getAmbdegree(Graph graph, Node node) {
+            List<Edge> adjacent = graph.getEdges(node);
+
+            int i = 0;
+
+            for(Edge edge : adjacent){
+                Endpoint prox = edge.getProximalEndpoint(node);
+                if (prox == Endpoint.CIRCLE)
+                    i++;
+            }
+
+            return i;
+        }
+    }
+
     public static class GraphNonNonAncestors {
         private Map<String, HashSet<String>> nonNonAncestors;
 
@@ -61,7 +201,6 @@ public class JmoMeasurementUtils {
             }
         }
     }
-
 
     public static class GraphAncestors {
         private Map<String, HashSet<String>> ancestors;
@@ -166,16 +305,16 @@ public class JmoMeasurementUtils {
         int totalTrueNonAncestor = 0;
         double difference = 0;
 
-        private AncestorScores(Graph dag, Graph estPag, LargeSemSimulator sem) {
+        private AncestorScores(Graph trueDag, Graph estPag, LargeSemSimulator sem) {
 
 
-            GraphAncestors trueAncestors = new GraphAncestors(dag);
+            GraphAncestors trueAncestors = new GraphAncestors(trueDag);
             GraphAncestors estAncestors = new GraphAncestors(estPag);
             GraphNonNonAncestors estNonNonAncestors = new GraphNonNonAncestors(estPag);
 
             for(Node x : estPag.getNodes()){
 
-                TotalEffect totalEffect = new TotalEffect(x, dag, trueAncestors, sem);
+                TotalEffect totalEffect = new TotalEffect(x, trueDag, trueAncestors, sem);
                 for (Node y : estPag.getNodes()){
                     if (x == y) continue;
 

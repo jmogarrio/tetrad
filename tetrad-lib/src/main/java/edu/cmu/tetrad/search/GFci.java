@@ -56,7 +56,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Joseph Ramsey
  * @author Choh-Man Teng
  */
-public final class Gfci implements GraphSearch{
+public final class GFci implements GraphSearch{
 
     /**
      * The PAG being constructed.
@@ -169,7 +169,7 @@ public final class Gfci implements GraphSearch{
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public Gfci(IndependenceTest independenceTest) {
+    public GFci(IndependenceTest independenceTest) {
         if (independenceTest == null || knowledge == null) {
             throw new NullPointerException();
         }
@@ -179,7 +179,7 @@ public final class Gfci implements GraphSearch{
         buildIndexing(independenceTest.getVariables());
     }
 
-    public Gfci(IndependenceTest independenceTest, Boolean conservative){
+    public GFci(IndependenceTest independenceTest, Boolean conservative){
         if (independenceTest == null || knowledge == null) {
             throw new NullPointerException();
         }
