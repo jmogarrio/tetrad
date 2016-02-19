@@ -56,7 +56,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Joseph Ramsey
  * @author Choh-Man Teng
  */
-public final class GFci {
+public final class Gfci implements GraphSearch{
 
     /**
      * The PAG being constructed.
@@ -119,9 +119,9 @@ public final class GFci {
     int sampleSize;
 
     /**
-     * The penalty discount for the GES search. By default 2.
+     * The penalty discount for the GES search. By default 4.
      */
-    private double penaltyDiscount = 2;
+    private double penaltyDiscount = 4;
 
     /**
      * The sample prior for the BDeu score (discrete data).
@@ -144,16 +144,32 @@ public final class GFci {
     private PrintStream out = System.out;
 
     /**
-     * True iff one-edge faithfulness is assumed. Speed up the algorith for very large searches. By default false.
+     * The amount of time taken in the GES stage
      */
-    private boolean faithfulnessAssumed = false;
+    private long gesTime = 0;
+
+    /**
+     * The amount of time taken in the orientation phase
+     */
+
+    private long orientationTime = 0;
+
+    private long triangleTime = 0;
+
+    /**
+     * True iff conservative FCI orientation rules should be used
+     */
+
+    private boolean conservative = false;
+
+
 
     //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
-    public GFci(IndependenceTest independenceTest) {
+    public Gfci(IndependenceTest independenceTest) {
         if (independenceTest == null || knowledge == null) {
             throw new NullPointerException();
         }
@@ -163,7 +179,44 @@ public final class GFci {
         buildIndexing(independenceTest.getVariables());
     }
 
+    public Gfci(IndependenceTest independenceTest, Boolean conservative){
+        if (independenceTest == null || knowledge == null) {
+            throw new NullPointerException();
+        }
+
+        this.independenceTest = independenceTest;
+        this.variables.addAll(independenceTest.getVariables());
+        buildIndexing(independenceTest.getVariables());
+
+        this.conservative = conservative;
+    }
+
     //========================PUBLIC METHODS==========================//
+
+
+    public long getTriangleTime() {
+        return triangleTime;
+    }
+
+    public long getElapsedTime(){
+        return orientationTime + gesTime;
+    }
+
+    public boolean isConservative() {
+        return conservative;
+    }
+
+    public void setConservative(boolean conservative) {
+        this.conservative = conservative;
+    }
+
+    public long getOrientationTime() {
+        return orientationTime;
+    }
+
+    public long getGesTime() {
+        return gesTime;
+    }
 
     public int getDepth() {
         return depth;
@@ -193,6 +246,7 @@ public final class GFci {
 
         // Adjacency phase
 
+        long startGes = System.currentTimeMillis();
         // Run GES to get an initial graph.
         Fgs ges;
         Graph gesGraph;
@@ -203,9 +257,9 @@ public final class GFci {
             ges.setKnowledge(getKnowledge());
             ges.setPenaltyDiscount(penaltyDiscount);
             ges.setVerbose(verbose);
-            ges.setDepth(getDepth());
+            ges.setDepth(-1);
             ges.setNumPatternsToStore(0);
-            ges.setFaithfulnessAssumed(faithfulnessAssumed);
+            ges.setFaithfulnessAssumed(false);
             graph = ges.search();
             gesGraph = new EdgeListGraphSingleConnections(graph);
         } else if (dataSet.isDiscrete()) {
@@ -216,50 +270,27 @@ public final class GFci {
             ges.setStructurePrior(structurePrior);
             ges.setStructurePrior(1);
             ges.setVerbose(false);
-            ges.setDepth(getDepth());
+            ges.setDepth(-1);
             ges.setNumPatternsToStore(0);
-            ges.setFaithfulnessAssumed(faithfulnessAssumed);
+            ges.setFaithfulnessAssumed(false);
             graph = ges.search();
             gesGraph = new EdgeListGraphSingleConnections(graph);
         } else {
             throw new IllegalArgumentException("Mixed data not supported.");
         }
 
-        if (verbose) {
-            System.out.println("GES done " + gesGraph.getNumEdges() + " edges in graph");
-        }
-        SepsetProducer sepsets = new SepsetsConservative(gesGraph, getIndependenceTest(), null, depth);
+        System.out.println("GES done " + gesGraph.getNumEdges() + " edges in graph");
 
-//        if (possibleDsepSearchDone) {
-//            sepsets = new SepsetsPossibleDsep(gesGraph, getIndependenceTest(), knowledge, depth,
-//                    maxPathLength);
-//        } else {
-//        sepsets = new SepsetsConservative(gesGraph, getIndependenceTest(), null, depth);
-//        }
+        gesTime = System.currentTimeMillis() - startGes;
 
-//        if (possibleDsepSearchDone) {
-//            System.out.println("Possible Dsep started maxPathLength = " + maxPathLength);
-//
-//            for (Edge edge : new ArrayList<>(graph.getEdges())) {
-//                Node i = edge.getNode1();
-//                Node k = edge.getNode2();
-//
-//                List<Node> j = graph.getAdjacentNodes(i);
-//                j.retainAll(graph.getAdjacentNodes(k));
-//
-//                if (!j.isEmpty()) {
-//                    sepsets.getSepset(i, k);
-//
-//                    if (sepsets.getPValue() > getIndependenceTest().getAlpha()) {
-//                        gesGraph.removeEdge(edge);
-//                    }
-//                }
-//            }
-//
-//            System.out.println("Possible Dsep finished");
-//        } else {
+        long startTriangletime = System.currentTimeMillis();
+        SepsetProducer triangleSepsets;
+
+        triangleSepsets = new SepsetsMaxPValue(gesGraph, getIndependenceTest(), null, depth);
+
 
         // Look in triangles
+
         for (Edge edge : gesGraph.getEdges()) {
             Node i = edge.getNode1();
             Node k = edge.getNode2();
@@ -268,21 +299,34 @@ public final class GFci {
             j.retainAll(gesGraph.getAdjacentNodes(k));
 
             if (!j.isEmpty()) {
-                sepsets.getSepset(i, k);
+                triangleSepsets.getSepset(i, k);
 
-                if (sepsets.getPValue() > getIndependenceTest().getAlpha()) {
+                if (triangleSepsets.getPValue() > getIndependenceTest().getAlpha()) {
                     graph.removeEdge(edge);
                 }
             }
         }
-//        }
+
+        this.triangleTime = System.currentTimeMillis() - startTriangletime;
+
+
 
         // Orientation phase.
 
-        // Step CI C, modified collider orientation step for FCI-GES due to Spirtes.
-        ruleR0Special(graph, gesGraph, sepsets, ges);
+        long startOrientation = System.currentTimeMillis();
 
-        FciOrient fciOrient = new FciOrient(sepsets);
+        SepsetProducer colliderSepsets;
+
+        if (conservative)
+            colliderSepsets = new SepsetsConservative(graph, independenceTest, null, depth);
+        else
+            colliderSepsets = new SepsetsMaxPValue(graph, independenceTest, null, depth);
+
+
+        // Step CI C, modified collider orientation step for FCI-GES due to Spirtes.
+        ruleR0Special(graph, gesGraph, colliderSepsets, ges);
+
+        FciOrient fciOrient = new FciOrient(colliderSepsets);
         fciOrient.setKnowledge(getKnowledge());
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxPathLength(maxPathLength);
@@ -290,6 +334,7 @@ public final class GFci {
 
         GraphUtils.replaceNodes(graph, independenceTest.getVariables());
 
+        orientationTime = System.currentTimeMillis() - startOrientation;
         //end.
 
         return graph;
@@ -320,10 +365,11 @@ public final class GFci {
     }
 
     public void ruleR0Special(Graph graph, Graph gesGraph, SepsetProducer sepsets, Fgs ges) {
-        SepsetsMaxPValue sepsetProducer = new SepsetsMaxPValue(graph, independenceTest, null, getDepth());
 
         graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(knowledge, graph, graph.getNodes());
+
+        System.out.println("R0 start");
 
         List<Node> nodes = graph.getNodes();
 
@@ -346,11 +392,6 @@ public final class GFci {
                     continue;
                 }
 
-                // Skip triples already oriented as colliders
-//                if (graph.isDefCollider(a, b, c)) {
-//                    continue;
-//                }
-
                 // Skip triple where collider orientations are forbidden by background knowledge
                 if (!isArrowpointAllowed(a, b, graph)) {
                     continue;
@@ -361,54 +402,26 @@ public final class GFci {
                 }
 
                 if (gesGraph.isAdjacentTo(a, c)) {
-//                    SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(a, b, c,
-//                            getIndependenceTest(), depth, graph, verbose);
-//                    if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
-//                        graph.setEndpoint(a, b, Endpoint.ARROW);
-//                        graph.setEndpoint(c, b, Endpoint.ARROW);
-//                        logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                        System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                    }
 
-                    if (sepsetProducer.isCollider(a, b, c)) {
+                    if (sepsets.isCollider(a, b, c)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
+                        logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+                        System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+                    }
 
-                        if (verbose) {
-                            logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                            System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                        }
+                    if (conservative){
+                        if(!sepsets.isNoncollider(a,b,c))
+                            graph.addAmbiguousTriple(a,b,c);
                     }
                 } else {
                     if (gesGraph.isDefCollider(a, b, c)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                        if (verbose) {
-                            logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                            System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-                        }
+                        logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
+                        System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
                     }
                 }
-
-//                if (!gesGraph.isAdjacentTo(a, c)) {
-//
-//                    // Copy colliders from the GES graph into the current graph where possible
-//                    if (gesGraph.isDefCollider(a, b, c)) {
-//                        graph.setEndpoint(a, b, Endpoint.ARROW);
-//                        graph.setEndpoint(c, b, Endpoint.ARROW);
-//                        logger.log("colliderOrientations", "Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                        System.out.println("Copying from GES: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                    }
-//                } else {
-//                    if (sepsets.isCollider(a, b, c)) {
-//                        graph.setEndpoint(a, b, Endpoint.ARROW);
-//                        graph.setEndpoint(c, b, Endpoint.ARROW);
-//                        logger.log("colliderOrientations", "On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                        System.out.println("On testing: " + SearchLogUtils.colliderOrientedMsg(a, b, c));
-//                    }
-//                }
-
 
             }
         }
@@ -518,9 +531,9 @@ public final class GFci {
         this.independenceTest = independenceTest;
     }
 
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
+    /*public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
-    }
+    }*/
 
     //===========================================PRIVATE METHODS=======================================//
 
@@ -622,6 +635,7 @@ public final class GFci {
         this.structurePrior = structurePrior;
     }
 }
+
 
 
 
