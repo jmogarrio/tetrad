@@ -401,6 +401,14 @@ public class JmoMeasurementUtils {
         return counts;
     }
 
+    /*
+                    unmarked collider / unmarked non-collider/ marked collider / marked non-collider / ambiguous / adjacency error
+     collider
+     non-collider
+     ambiguous
+
+     */
+
     private static int[][] tripleClassificationCounts(Graph trueGraph, Graph estGraph){
         int[][] counts = new int[3][6];
 
