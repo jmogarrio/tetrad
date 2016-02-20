@@ -252,7 +252,9 @@ public final class Fgs implements GraphSearch, GraphScorer {
         score = 0.0;
 
         // Do forward search.
+        setFaithfulnessAssumed(true);
         fes();
+        setFaithfulnessAssumed(false);
 
         // Do backward search.
         bes();
