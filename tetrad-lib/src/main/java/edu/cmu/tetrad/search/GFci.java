@@ -193,6 +193,9 @@ public final class GFci implements GraphSearch{
 
     //========================PUBLIC METHODS==========================//
 
+    public void setFaithfulnessAssumed(Boolean a){
+        ;
+    }
 
     public long getTriangleTime() {
         return triangleTime;
