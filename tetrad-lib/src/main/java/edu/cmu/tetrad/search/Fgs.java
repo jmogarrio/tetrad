@@ -166,6 +166,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
             out.println("GES constructor");
         }
 
+
         if (dataSet.isDiscrete()) {
             setGesScore(new BDeuScore(dataSet));
         } else {
@@ -175,6 +176,7 @@ public final class Fgs implements GraphSearch, GraphScorer {
         if (verbose) {
             out.println("GES constructor done");
         }
+        this.graph = new EdgeListGraphSingleConnections(getVariables());
     }
 
     /**
@@ -252,9 +254,6 @@ public final class Fgs implements GraphSearch, GraphScorer {
         score = 0.0;
 
         // Do forward search.
-        //setFaithfulnessAssumed(true);
-        //fes();
-        setFaithfulnessAssumed(false);
         fes();
 
         // Do backward search.
