@@ -34,6 +34,7 @@ import java.util.*;
  * Implements the JCPC algorithm.
  *
  * @author Joseph Ramsey (this version).
+ * @deprecated JCPC is better.
  */
 public class Jpc implements GraphSearch {
     private int numAdded;
@@ -59,7 +60,7 @@ public class Jpc implements GraphSearch {
 
     private PathBlockingSet pathBlockingSet = PathBlockingSet.LARGE;
 
-    /**
+    /**e
      * The independence test used for the PC search.
      */
     private IndependenceTest independenceTest;
@@ -183,8 +184,6 @@ public class Jpc implements GraphSearch {
 
     /**
      * Sets the maximum number of adjacencies.
-     *
-     * @param maxAdjacencies
      */
     public void setSoftmaxAdjacencies(int maxAdjacencies) {
         if (maxAdjacencies < 1) {

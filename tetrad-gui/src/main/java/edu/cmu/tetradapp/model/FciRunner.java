@@ -90,7 +90,6 @@ public class FciRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static FciRunner serializableInstance() {
@@ -187,7 +186,6 @@ public class FciRunner extends AbstractAlgorithmRunner
     }
 
     /**
-     * @param node
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {

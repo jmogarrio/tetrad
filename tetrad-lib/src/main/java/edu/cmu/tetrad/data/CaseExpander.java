@@ -23,10 +23,11 @@ package edu.cmu.tetrad.data;
 
 
 /**
- * @author Joseph Ramsey
- * @return a new data set in which cases in the given data set that have been
+ * Makes a new data set in which cases in the given data set that have been
  * assigned multiplicies other than n = 1 are copied out n times. This increases
  * the number of rows in the data set.
+ *
+ * @author Joseph Ramsey
  */
 public final class CaseExpander implements DataFilter {
 

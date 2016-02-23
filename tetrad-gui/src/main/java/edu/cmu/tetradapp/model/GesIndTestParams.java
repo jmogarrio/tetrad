@@ -30,7 +30,8 @@ import java.io.ObjectInputStream;
 /**
  * @author Ricardo Silva
  */
-public class GesIndTestParams implements IndTestParams {
+public class
+GesIndTestParams implements IndTestParams {
     static final long serialVersionUID = 23L;
 
     /**
@@ -73,7 +74,7 @@ public class GesIndTestParams implements IndTestParams {
      * The penalty discount--the BIC penalty for continuous case is multiplied
      * by this.
      */
-    private double penaltyDiscount = 4.0;
+    private double penaltyDiscount = 2.0;
 
     /**
      * True iff the f cutoff should be used in place of the usual BIC delta
@@ -120,7 +121,6 @@ public class GesIndTestParams implements IndTestParams {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static GesIndTestParams serializableInstance() {

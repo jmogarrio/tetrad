@@ -1582,40 +1582,6 @@
                 <params-class>edu.cmu.tetradapp.model.GFciSearchParams
                 </params-class>
             </model>
-            <model name="TFCI" acronym="TFCI" help="tfci"
-                   category="PAG searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="tripleClassifications" description="Triple Classifications" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.TFciRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor
-                </editor-class>
-                <params-class>edu.cmu.tetradapp.model.FciSearchParams
-                </params-class>
-            </model>
-            <model name="TGFCI" acronym="TGFCI" help="tgfci"
-                   category="PAG searches">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="independencies" description="Independencies" default="on"/>
-                    <event id="dependencies" description="Dependencies"/>
-                    <event id="knowledgeOrientations" description="Knowledge orientations"/>
-                    <event id="impliedOrientations" description="Implied Orientations" default="on"/>
-                    <event id="tripleClassifications" description="Triple Classifications" default="on"/>
-                    <event id="graph" description="Graph" default="on"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.TGFciRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.FciCcdSearchEditor
-                </editor-class>
-                <params-class>edu.cmu.tetradapp.model.GFciSearchParams
-                </params-class>
-            </model>
             <model name="ION" acronym="ION" help="ion" category="PAG searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1667,7 +1633,7 @@
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.GesParams</params-class>
             </model>
-            <model name="FGS" acronym="FGS" help="ges"
+            <model name="FGS" acronym="FGS" help="fgs"
                    category="Pattern Searches">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1680,9 +1646,9 @@
                     <event id="graph" description="Graph" default="on"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.FgsRunner</model-class>
-                <editor-class>edu.cmu.tetradapp.editor.GesSearchEditor
+                <editor-class>edu.cmu.tetradapp.editor.FgsSearchEditor
                 </editor-class>
-                <params-class>edu.cmu.tetradapp.model.GesParams</params-class>
+                <params-class>edu.cmu.tetradapp.model.FgsParams</params-class>
             </model>
             <model name="iMAGES" acronym="iMAGES" help="ges"
                    category="Pattern Searches">
@@ -1760,6 +1726,44 @@
                 <editor-class>edu.cmu.tetradapp.editor.MimSearchEditor2
                 </editor-class>
                 <params-class>edu.cmu.tetradapp.model.BuildPureClustersParams
+                </params-class>
+            </model>
+            <model name="FOFC" acronym="FOFC" help="fofc"
+                   category="Multiple Indicator Model searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="detail" description="Details"/>
+                    <event id="tetrads" description="Tetrads"/>
+                    <event id="sextadPValues" description="Sextad P Values"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="clusters" description="Clusters"/>
+                    <event id="elapsed" description="Elapsed Time"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.FofcRunner
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FofcSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.FofcParams
+                </params-class>
+            </model>
+            <model name="FTFC" acronym="FTFC" help="ftfc"
+                   category="Multiple Indicator Model searches">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="detail" description="Details"/>
+                    <event id="tetrads" description="Tetrads"/>
+                    <event id="sextadPValues" description="Sextad P Values"/>
+                    <event id="independencies" description="Independencies" default="on"/>
+                    <event id="dependencies" description="Dependencies"/>
+                    <event id="clusters" description="Clusters"/>
+                    <event id="elapsed" description="Elapsed Time"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.FtfcRunner
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.FtfcSearchEditor
+                </editor-class>
+                <params-class>edu.cmu.tetradapp.model.FtfcParams
                 </params-class>
             </model>
             <model name="Purify" acronym="Purify" help="purify"

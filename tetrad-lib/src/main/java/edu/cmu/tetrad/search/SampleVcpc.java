@@ -92,19 +92,8 @@ public final class SampleVcpc implements GraphSearch {
      */
     private Set<Triple> ambiguousTriples;
 
-    /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
-
-    /**
-     *
-     */
-    // the set of definitely non-adjacencies
 
     private Set<Edge> definitelyNonadjacencies;
-
-// the set of variables that pass the local markov test in all consistent patterns.
 
     private Set<Node> markovInAllPatterns;
 
@@ -182,8 +171,6 @@ public final class SampleVcpc implements GraphSearch {
         List<Node> nodes = covMatrix.getVariables();
         this.indexMap = indexMap(variables);
         this.nameMap = mapNames(variables);
-
-        this.semIm = semIm;
 
         this.nodesToVariables = new HashMap<Node, Node>();
         this.variablesToNodes = new HashMap<Node, Node>();

@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-                             http://maven.apache.org/maven-v4_0_0.xsd">
+http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.cmu</groupId>
     <artifactId>tetrad</artifactId>
@@ -11,8 +11,9 @@
 
     <name>Tetrad Project</name>
     <modules>
-        <module>tetrad-lib</module>
         <module>tetrad-gui</module>
+        <module>tetrad-cli</module>
+        <module>tetrad-lib</module>
     </modules>
 
     <licenses>
@@ -69,6 +70,14 @@
                     </reportSet>
                 </reportSets>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+                <configuration>
+                    <aggregate>true</aggregate>
+                </configuration>
+            </plugin>
         </plugins>
     </reporting>
 
@@ -85,5 +94,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
 </project>

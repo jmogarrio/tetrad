@@ -96,7 +96,7 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
 //        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
 //                Preferences.userRoot().getBoolean("latentDataSaved", getParams().isIncludeLatents()));
         JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
-                getParams().isIncludeLatents());
+                getParams().isLatentDataSaved());
         latentDataSaved.setHorizontalTextPosition(SwingConstants.LEFT);
         latentDataSaved.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
@@ -105,15 +105,15 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
             }
         });
 
-        JCheckBox positiveOnlyBox = new JCheckBox("Positive Data Only",
-                getParams().isPositiveDataOnly());
-        positiveOnlyBox.setHorizontalTextPosition(SwingConstants.LEFT);
-        positiveOnlyBox.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox b = (JCheckBox)e.getSource();
-                getParams().setPositiveDataOnly(b.isSelected());
-            }
-        });
+//        JCheckBox positiveOnlyBox = new JCheckBox("Positive Data Only",
+//                getParams().isPositiveDataOnly());
+//        positiveOnlyBox.setHorizontalTextPosition(SwingConstants.LEFT);
+//        positiveOnlyBox.addActionListener(new ActionListener(){
+//            public void actionPerformed(ActionEvent e) {
+//                JCheckBox b = (JCheckBox)e.getSource();
+//                getParams().setPositiveDataOnly(b.isSelected());
+//            }
+//        });
 
         setLayout(new BorderLayout());
 
@@ -136,9 +136,9 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
         b2.add(latentDataSaved);
         b.add(b2);
 
-        Box b3 = Box.createHorizontalBox();
-        b3.add(positiveOnlyBox);
-        b.add(b3);
+//        Box b3 = Box.createHorizontalBox();
+//        b3.add(positiveOnlyBox);
+//        b.add(b3);
 
         add(b, BorderLayout.CENTER);
         setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -150,9 +150,7 @@ public class SemDataParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * @return the getMappings object being edited. (This probably should not be
-     * public, but it is needed so that the textfields can edit the model.)
-     *
-     * @return the stored simulation parameters model.
+     * public, but it is needed so that the textfields can edit the model.).
      */
     private synchronized SemDataParams getParams() {
         return this.params;

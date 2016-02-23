@@ -51,9 +51,6 @@ public class DiscretizationWrapper extends DataWrapper {
     /**
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
-     *
-     * @param data
-     * @param params
      */
     public DiscretizationWrapper(DataWrapper data, DiscretizationParams params) {
         if (data == null) {
@@ -91,7 +88,6 @@ public class DiscretizationWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static DiscretizationWrapper serializableInstance() {

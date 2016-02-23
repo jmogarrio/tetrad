@@ -143,8 +143,6 @@ public final class TimeLagGraphEditor extends JPanel
      * SessionNodes and SessionEdges selected in the workbench. Note that the
      * workbench, not the SessionEditorNodes themselves, keeps track of the
      * selection.
-     *
-     * @return the set of selected model nodes.
      */
     public List getSelectedModelComponents() {
         List<Component> selectedComponents =
@@ -461,8 +459,7 @@ public final class TimeLagGraphEditor extends JPanel
                     while (graph == null && ++numTrials < 100) {
 
                         if (editor.isRandomForward()) {
-                            dag = GraphUtils.randomGraphRandomForwardEdges(getGraph().getNodes(), editor.getNumLatents(),
-                                    editor.getMaxEdges());
+                            dag = GraphUtils.randomGraphRandomForwardEdges(getGraph().getNodes(), editor.getNumLatents(), editor.getMaxEdges(), 30, 15, 15, false);
                             GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
                             HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
                             GraphUtils.arrangeByLayout(dag, layout);
@@ -475,10 +472,14 @@ public final class TimeLagGraphEditor extends JPanel
 
                                 GraphUtils.arrangeByLayout(dag, layout);
                             } else {
-                                dag = GraphUtils.randomGraph(editor.getNumNodes(),
-                                        editor.getNumLatents(), editor.getMaxEdges(),
-                                        editor.getMaxDegree(), editor.getMaxIndegree(),
-                                        editor.getMaxOutdegree(), editor.isConnected());
+                                List<Node> nodes = new ArrayList<Node>();
+
+                                for (int i = 0; i < editor.getNumNodes(); i++) {
+                                    nodes.add(new ContinuousVariable("X" + (i + 1)));
+                                }
+
+                                dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
+                                        editor.getMaxDegree(), editor.getMaxIndegree(), editor.getMaxOutdegree(), editor.isConnected());
                             }
                         } else {
                             do {
@@ -493,10 +494,14 @@ public final class TimeLagGraphEditor extends JPanel
 
                                     GraphUtils.arrangeByLayout(dag, layout);
                                 } else {
-                                    dag = GraphUtils.randomGraph(editor.getNumNodes(),
-                                            editor.getNumLatents(), editor.getMaxEdges(),
-                                            30, 15, 15, editor.isConnected()
-                                    );
+                                    List<Node> nodes = new ArrayList<Node>();
+
+                                    for (int i = 0; i < editor.getNumNodes(); i++) {
+                                        nodes.add(new ContinuousVariable("X" + (i + 1)));
+                                    }
+
+                                    dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
+                                            30, 15, 15, editor.isConnected());
                                 }
                             } while (dag.getNumEdges() < editor.getMaxEdges());
                         }
@@ -509,7 +514,7 @@ public final class TimeLagGraphEditor extends JPanel
 
 //                            graph = DataGraphUtils.addCycles2(dag, minNumCycles, minCycleLength);
 
-                            graph = GraphUtils.cyclicGraph4(editor.getNumNodes(), editor.getMaxEdges());
+                            graph = GraphUtils.cyclicGraph2(editor.getNumNodes(), editor.getMaxEdges());
                             GraphUtils.addTwoCycles(graph, editor.getMinNumCycles());
                         } else {
                             graph = new EdgeListGraph(dag);
@@ -545,6 +550,8 @@ public final class TimeLagGraphEditor extends JPanel
                         JOptionPane.PLAIN_MESSAGE);
 
                 if (ret == JOptionPane.OK_OPTION) {
+                    int numFactors = Preferences.userRoot().getInt(
+                            "randomMimNumFactors", 1);
                     int numStructuralNodes = Preferences.userRoot().getInt(
                             "numStructuralNodes", 3);
                     int maxStructuralEdges = Preferences.userRoot().getInt(
@@ -561,11 +568,24 @@ public final class TimeLagGraphEditor extends JPanel
                                     .getInt("measuredMeasuredImpureAssociations",
                                             0);
 
-                    Graph graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
-                            maxStructuralEdges, measurementModelDegree,
-                            numLatentMeasuredImpureParents,
-                            numMeasuredMeasuredImpureParents,
-                            numMeasuredMeasuredImpureAssociations);
+                    Graph graph;
+
+                    if (numFactors == 1) {
+                        graph = DataGraphUtils.randomSingleFactorModel(numStructuralNodes,
+                                maxStructuralEdges, measurementModelDegree,
+                                numLatentMeasuredImpureParents,
+                                numMeasuredMeasuredImpureParents,
+                                numMeasuredMeasuredImpureAssociations);
+                    } else if (numFactors == 2) {
+                        graph = DataGraphUtils.randomBifactorModel(numStructuralNodes,
+                                maxStructuralEdges, measurementModelDegree,
+                                numLatentMeasuredImpureParents,
+                                numMeasuredMeasuredImpureParents,
+                                numMeasuredMeasuredImpureAssociations);
+                    } else {
+                        throw new IllegalArgumentException("Can only make random MIMs for 1 or 2 factors, " +
+                                "sorry dude.");
+                    }
 
                     getWorkbench().setGraph(graph);
                 }

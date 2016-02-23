@@ -79,7 +79,6 @@ public class FciIndTestParams implements IndTestParams {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static FciIndTestParams serializableInstance() {
@@ -101,8 +100,6 @@ public class FciIndTestParams implements IndTestParams {
 
     /**
      * Sets the depth for search algorithms that require it.
-     *
-     * @param depth
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -114,8 +111,6 @@ public class FciIndTestParams implements IndTestParams {
 
     /**
      * @return the depth of the search.
-     *
-     * @return depth
      */
     public int getDepth() {
         return this.depth;

@@ -62,7 +62,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     }
 
     public MimBuildRunner(DataWrapper dataWrapper,
-                          BuildPureClustersRunner mmWrapper,
+                          FofcRunner mmWrapper,
                           MimBuildParams params) {
         super(dataWrapper, mmWrapper.getClusters(), params);
         this.dataSet = (DataSet) getData();
@@ -182,7 +182,6 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static MimBuildRunner serializableInstance() {

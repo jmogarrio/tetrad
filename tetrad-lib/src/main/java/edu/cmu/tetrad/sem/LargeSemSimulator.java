@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.ColtDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.*;
@@ -37,6 +36,7 @@ import org.apache.commons.math3.random.*;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
@@ -57,6 +57,8 @@ public final class LargeSemSimulator {
     private double[] errorVars;
     private double[] means;
 
+    private HashMap<Edge, Double> edgeCoefs;
+
     /**
      * Used for some linear algebra calculations.
      */
@@ -68,8 +70,6 @@ public final class LargeSemSimulator {
     private double varLow = 1.0;
     private double varHigh = 3.0;
     private PrintStream out = System.out;
-    private int NTHREADS = Runtime.getRuntime().availableProcessors() * 10;
-    private final int minChunk = 11;
     private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
     private int[] tierIndices;
 
@@ -86,6 +86,7 @@ public final class LargeSemSimulator {
         this.graph = graph;
         this.variableNodes = nodes;
         this.tierIndices = tierIndices;
+        this.edgeCoefs = new HashMap<>();
 
         if (graph instanceof SemGraph) {
             ((SemGraph) graph).setShowErrorTerms(false);
@@ -100,19 +101,11 @@ public final class LargeSemSimulator {
         this.graph = graph;
         this.variableNodes = nodes;
         this.tierIndices = tierIndices;
-
-//        this.variableNodes = graph.getNodes();
-        final List<Node> causalOrdering = graph.getCausalOrdering();
-        this.tierIndices = new int[causalOrdering.size()];
-
-        for (int i = 0; i < causalOrdering.size(); i++) {
-            this.tierIndices[i] = variableNodes.indexOf(causalOrdering.get(i));
-        }
+        this.edgeCoefs = new HashMap<>();
 
         if (graph instanceof SemGraph) {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
-
     }
 
     /**
@@ -123,19 +116,13 @@ public final class LargeSemSimulator {
      * various values--could be improved).
      */
     public DataSet simulateDataAcyclic(int sampleSize) {
-        if (false) {
-            return simulateDataAcyclicConcurrent(sampleSize);
-        }
-
         int size = variableNodes.size();
         setupModel(size);
 
 //        final DataSet dataSet = new ColtDataSet(sampleSize, variableNodes);
         final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variableNodes.size()), variableNodes);
 
-        for (int i = 0; i < tierIndices.length; i++) {
-            int col = tierIndices[i];
-
+        for (int col : tierIndices) {
             for (int row = 0; row < sampleSize; row++) {
                 double value = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
 
@@ -152,7 +139,6 @@ public final class LargeSemSimulator {
     }
 
     private void setupModel(int size) {
-        System.out.println("Setup model start");
         this.parents = new int[size][];
         this.coefs = new double[size][];
         this.errorVars = new double[size];
@@ -176,19 +162,15 @@ public final class LargeSemSimulator {
 
             int[] parents = this.parents[_head];
             int[] newParents = new int[parents.length + 1];
-            for (int i = 0; i < parents.length; i++) {
-                newParents[i] = parents[i];
-            }
+            System.arraycopy(parents, 0, newParents, 0, parents.length);
             newParents[newParents.length - 1] = _tail;
             double[] coefs = this.coefs[_head];
             double[] newCoefs = new double[coefs.length + 1];
 
-            for (int i = 0; i < coefs.length; i++) {
-                newCoefs[i] = coefs[i];
-            }
+            System.arraycopy(coefs, 0, newCoefs, 0, coefs.length);
 
             newCoefs[newCoefs.length - 1] = edgeCoefDist.nextRandom();
-
+            edgeCoefs.put(edge, newCoefs[newCoefs.length - 1]);
             this.parents[_head] = newParents;
             this.coefs[_head] = newCoefs;
         }
@@ -197,8 +179,6 @@ public final class LargeSemSimulator {
             this.errorVars[i] = errorCovarDist.nextRandom();
             this.means[i] = meanDist.nextRandom();
         }
-
-        System.out.println("Setup model done");
     }
 
     // Tier ordering is the order of the variables.
@@ -206,15 +186,11 @@ public final class LargeSemSimulator {
         int numVars = variableNodes.size();
         setupModel(numVars);
 
-        System.out.println("Tier ordering");
-
         final int[][] _parents = parents;
         final double[][] _coefs = coefs;
 
 //        final double[][] _data = new double[sampleSize][numVars];
         final double[][] _data = new double[numVars][sampleSize];
-
-        System.out.println("Starting simulation task");
 
         // This random number generator is not thread safe, so we make a new one each time.
         RandomGenerator apacheGen = new Well19937a(new Date().getTime());
@@ -239,11 +215,7 @@ public final class LargeSemSimulator {
 
                 if (to - from <= chunk) {
                     for (int row = from; row < to; row++) {
-                        if (row % 100 == 0) out.println("Row " + row);
-
-                        for (int i = 0; i < tierIndices.length; i++) {
-                            int col = tierIndices[i];
-
+                        for (int col : tierIndices) {
                             double value = generatorLocal.nextGaussian(0, sqrt(errorVars[col]));
 
                             for (int j = 0; j < _parents[col].length; j++) {
@@ -265,7 +237,7 @@ public final class LargeSemSimulator {
 
                     return true;
                 } else {
-                    List<SimulationTask> simulationTasks = new ArrayList<SimulationTask>();
+                    List<SimulationTask> simulationTasks = new ArrayList<>();
 
                     int mid = (to - from) / 2;
 
@@ -288,105 +260,105 @@ public final class LargeSemSimulator {
     }
 
 
-    // Tier ordering is the order of the variables.
-    private DataSet constructSimulation2(List<Node> variables, int sampleSize) {
-        // Create some index arrays to hopefully speed up the simulation.
+//    // Tier ordering is the order of the variables.
+//    private DataSet constructSimulation2(List<Node> variables, int sampleSize) {
+//        // Create some index arrays to hopefully speed up the simulation.
+////        final int[] tierIndices = new int[variableNodes.size()];
+////
+////        for (int i = 0; i < tierIndices.length; i++) {
+////            tierIndices[i] = i;
+////        }
+//
+//
+//        List<Node> tierOrdering = graph.getCausalOrdering();
+//
 //        final int[] tierIndices = new int[variableNodes.size()];
+//
+//        for (int i = 0; i < tierIndices.length; i++) {
+//            tierIndices[i] = variableNodes.indexOf(tierOrdering.get(i));
+//        }
 //
 //        for (int i = 0; i < tierIndices.length; i++) {
 //            tierIndices[i] = i;
 //        }
-
-
-        List<Node> tierOrdering = graph.getCausalOrdering();
-
-        final int[] tierIndices = new int[variableNodes.size()];
-
-        for (int i = 0; i < tierIndices.length; i++) {
-            tierIndices[i] = variableNodes.indexOf(tierOrdering.get(i));
-        }
-
-        for (int i = 0; i < tierIndices.length; i++) {
-            tierIndices[i] = i;
-        }
-
-        final int[][] _parents = parents;
-        final double[][] _coefs = coefs;
 //
-//        int numVars = variables.size();
+//        final int[][] _parents = parents;
+//        final double[][] _coefs = coefs;
+////
+////        int numVars = variables.size();
+////
+////        final double[][] _data = new double[numVars][sampleSize];
 //
-//        final double[][] _data = new double[numVars][sampleSize];
-
-        final DataSet dataSet = new ColtDataSet(sampleSize, variableNodes);
-//        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variableNodes.size()), variables);
-
-//        //Do the simulation.
-        class Task extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
-
-            public Task(int chunk, int from, int to) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-
-                    for (int row = from; row < to; row++) {
-//                        System.out.println("Row = " + row);
-                        for (int i = 0; i < tierIndices.length; i++) {
-                            int col = tierIndices[i];
-                            double value1 = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
-
-                            for (int j = 0; j < _parents[col].length; j++) {
-                                int parent = _parents[col][j];
-                                double aDouble = dataSet.getDouble(row, parent);
-                                value1 += aDouble * _coefs[col][j];
-                            }
-
-                            value1 += means[col];
-                            double value = value1;
-                            dataSet.setDouble(row, col, value);
-                        }
-                    }
-
-                    return true;
-                } else {
-                    int numIntervals = 4;
-
-                    int step = (to - from) / numIntervals + 1;
-
-                    List<Task> tasks = new ArrayList<Task>();
-
-                    for (int i = 0; i < numIntervals; i++) {
-//                        System.out.println("From = " + (from + i * step) + " to + " + Math.min(from + (i + 1) * step, to));
-                        tasks.add(new Task(chunk, from + i * step, Math.min(from + (i + 1) * step, to)));
-                    }
-
-                    invokeAll(tasks);
-
-                    return true;
-                }
-
-            }
-
-        }
-
-        int _chunk = variables.size() / NTHREADS;
-        final int chunk = _chunk < minChunk ? minChunk : _chunk;
-
-        System.out.println("Starting data simulation 2");
-
-        pool.invoke(new Task(chunk, 0, sampleSize));
-
-        System.out.println("Finishing data simulation 2");
-
-        return dataSet;
-    }
+//        final DataSet dataSet = new ColtDataSet(sampleSize, variableNodes);
+////        final DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variableNodes.size()), variables);
+//
+////        //Do the simulation.
+//        class Task extends RecursiveTask<Boolean> {
+//            private int chunk;
+//            private int from;
+//            private int to;
+//
+//            public Task(int chunk, int from, int to) {
+//                this.chunk = chunk;
+//                this.from = from;
+//                this.to = to;
+//            }
+//
+//            @Override
+//            protected Boolean compute() {
+//                if (to - from <= chunk) {
+//
+//                    for (int row = from; row < to; row++) {
+////                        System.out.println("Row = " + row);
+//                        for (int col : tierIndices) {
+//                            double value1 = RandomUtil.getInstance().nextNormal(0, sqrt(errorVars[col]));
+//
+//                            for (int j = 0; j < _parents[col].length; j++) {
+//                                int parent = _parents[col][j];
+//                                double aDouble = dataSet.getDouble(row, parent);
+//                                value1 += aDouble * _coefs[col][j];
+//                            }
+//
+//                            value1 += means[col];
+//                            double value = value1;
+//                            dataSet.setDouble(row, col, value);
+//                        }
+//                    }
+//
+//                    return true;
+//                } else {
+//                    int numIntervals = 4;
+//
+//                    int step = (to - from) / numIntervals + 1;
+//
+//                    List<Task> tasks = new ArrayList<>();
+//
+//                    for (int i = 0; i < numIntervals; i++) {
+////                        System.out.println("From = " + (from + i * step) + " to + " + Math.min(from + (i + 1) * step, to));
+//                        tasks.add(new Task(chunk, from + i * step, Math.min(from + (i + 1) * step, to)));
+//                    }
+//
+//                    invokeAll(tasks);
+//
+//                    return true;
+//                }
+//
+//            }
+//
+//        }
+//
+//        int _chunk = variables.size() / NTHREADS;
+//        int minChunk = 11;
+//        final int chunk = _chunk < minChunk ? minChunk : _chunk;
+//
+//        System.out.println("Starting data simulation 2");
+//
+//        pool.invoke(new Task(chunk, 0, sampleSize));
+//
+//        System.out.println("Finishing data simulation 2");
+//
+//        return dataSet;
+//    }
 
 
     public TetradAlgebra getAlgebra() {
@@ -395,6 +367,10 @@ public final class LargeSemSimulator {
         }
 
         return algebra;
+    }
+
+    public double getCoef(Edge edge){
+        return edgeCoefs.get(edge);
     }
 
     public Graph getGraph() {
@@ -420,7 +396,6 @@ public final class LargeSemSimulator {
     }
 
 }
-
 
 
 

@@ -178,7 +178,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         setPreferredSize(new Dimension(600, 400));
 
         DataModelList dataModelList = dataWrapper.getDataModelList();
-        DataModel selectedModel = dataWrapper.getSelectedDataModel();
+        DataModel selectedModel = dataModelList.getSelectedModel();
 
         removeAll();
         removeEmptyModels(dataModelList);
@@ -458,8 +458,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                 String[] tokens = variables.split(" ");
 
                 for (int i = 0; i < getNumJTables(); i++) {
-                    System.out.println(i);
-
                     JTable jTable = getJTableAt(i);
 
                     if (jTable instanceof TabularDataJTable) {
@@ -503,8 +501,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                 }
 
                 for (int i = 0; i < getNumJTables(); i++) {
-                    System.out.println(i);
-
                     JTable jTable = getJTableAt(i);
 
                     if (jTable instanceof TabularDataJTable) {
@@ -570,8 +566,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         setToMissingCells.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 for (int i = 0; i < getNumJTables(); i++) {
-                    System.out.println(i);
-
                     JTable jTable = getJTableAt(i);
 
                     if (jTable instanceof TabularDataJTable) {

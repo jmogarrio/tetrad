@@ -34,11 +34,13 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
- * Runs PC and FCI from the moves line.
+ * Runs several algorithms from the moves line. Documentation is available
+ * in the wiki of the Tetrad project on GitHub. This will be replaced by
+ * the package tetrad-cli.
  *
  * @author Joseph Ramsey
  */
@@ -70,6 +72,7 @@ public final class TetradCmd {
     private boolean rfciUsed = false;
     private boolean nodsep = false;
     private boolean useCovariance = true;
+    private boolean silent = false;
 
     public TetradCmd(String[] argv) {
         readArguments(new StringArrayTokenizer(argv));
@@ -107,7 +110,7 @@ public final class TetradCmd {
             if ("-data".equalsIgnoreCase(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "'-data' tag must be followed " +
                                     "by an argument indicating the path to the data " +
@@ -120,7 +123,7 @@ public final class TetradCmd {
             } else if ("-covariance".equalsIgnoreCase(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "'-data' tag must be followed " +
                                     "by an argument indicating the path to the data " +
@@ -134,7 +137,7 @@ public final class TetradCmd {
             } else if ("-datatype".equalsIgnoreCase(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "'-datatype' tag must be followed " +
                                     "by either 'discrete' or 'continuous'."
@@ -145,7 +148,7 @@ public final class TetradCmd {
             } else if ("-algorithm".equalsIgnoreCase(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "'-algorithm' tag must be followed " +
                                     "by an algorithm name."
@@ -179,7 +182,7 @@ public final class TetradCmd {
                 try {
                     String argument = tokenizer.nextToken();
 
-                    if (argument.startsWith("-") || argument == null) {
+                    if (argument.startsWith("-")) {
                         throw new NumberFormatException();
                     }
 
@@ -195,7 +198,7 @@ public final class TetradCmd {
             } else if ("-outfile".equalsIgnoreCase(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "'-outfile' tag must be " +
                                     "followed  by an argument indicating the path to the " +
@@ -207,7 +210,7 @@ public final class TetradCmd {
             } else if ("-seed".equalsIgnoreCase(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "-seed must be followed by an integer (long) value."
                     );
@@ -217,7 +220,7 @@ public final class TetradCmd {
             } else if ("-numNodes".equals(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "-numNodes must be followed by an integer >= 3.");
                 }
@@ -226,7 +229,7 @@ public final class TetradCmd {
             } else if ("-numEdges".equals(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "-numEdges must be followed by an integer >= 0.");
                 }
@@ -235,7 +238,7 @@ public final class TetradCmd {
             } else if ("-knowledge".equals(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "'-knowledge' tag must be followed " +
                                     "by an argument indicating the path to the knowledge " +
@@ -247,22 +250,25 @@ public final class TetradCmd {
             } else if ("-testtype".equals(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "'-testType' tag must be followed by 'delta' or 'wishart'");
                 }
 
-                if (argument.equals("delta")) {
-                    testType = TestType.TETRAD_DELTA;
-                } else if (argument.equals("wishart")) {
-                    testType = TestType.TETRAD_WISHART;
-                } else {
-                    throw new IllegalArgumentException("Expecting 'delta' or 'wishart'.");
+                switch (argument) {
+                    case "delta":
+                        testType = TestType.TETRAD_DELTA;
+                        break;
+                    case "wishart":
+                        testType = TestType.TETRAD_WISHART;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Expecting 'delta' or 'wishart'.");
                 }
             } else if ("-graphxml".equals(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "'-graphxml' tag must be followed " +
                                     "by an argument indicating the path to the file where the graph xml output " +
@@ -274,7 +280,7 @@ public final class TetradCmd {
             } else if ("-graphtxt".equals(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "'-graphtxt' tag must be followed " +
                                     "by an argument indicating the path to the file where the graph txt output " +
@@ -286,7 +292,7 @@ public final class TetradCmd {
             } else if ("-initialgraphtxt".equals(token)) {
                 String argument = tokenizer.nextToken();
 
-                if (argument.startsWith("-") || argument == null) {
+                if (argument.startsWith("-")) {
                     throw new IllegalArgumentException(
                             "'-initialgraphtxt' tag must be followed " +
                                     "by an argument indicating the path to the file where the graph txt output " +
@@ -301,7 +307,7 @@ public final class TetradCmd {
                 try {
                     String argument = tokenizer.nextToken();
 
-                    if (argument.startsWith("-") || argument == null) {
+                    if (argument.startsWith("-")) {
                         throw new IllegalArgumentException(
                                 "'-sampleprior' tag must be followed " +
                                         "by an argument indicating the BDEU structure prior."
@@ -320,7 +326,7 @@ public final class TetradCmd {
                 try {
                     String argument = tokenizer.nextToken();
 
-                    if (argument.startsWith("-") || argument == null) {
+                    if (argument.startsWith("-")) {
                         throw new IllegalArgumentException(
                                 "'-structureprior' tag must be followed " +
                                         "by an argument indicating the BDEU sample prior."
@@ -339,7 +345,7 @@ public final class TetradCmd {
                 try {
                     String argument = tokenizer.nextToken();
 
-                    if (argument.startsWith("-") || argument == null) {
+                    if (argument.startsWith("-")) {
                         throw new IllegalArgumentException(
                                 "'-penaltydiscount' tag must be followed " +
                                         "by an argument indicating penalty discount."
@@ -357,7 +363,9 @@ public final class TetradCmd {
             } else if ("-rfci".equalsIgnoreCase(token)) {
                 this.rfciUsed = true;
             } else if ("-nodsep".equalsIgnoreCase(token)) {
-                this.nodsep = true;
+                this.nodsep = true;            } 
+            else if ("-silent".equalsIgnoreCase(token)) {
+                this.silent = true;
             } else {
                 throw new IllegalArgumentException(
                         "Unexpected argument: " + token);
@@ -376,12 +384,12 @@ public final class TetradCmd {
                     "No data type (continuous/discrete) " + "was specified.");
         }
 
-        out.println("Loading data from " + dataFileName + ".");
+        outPrint("Loading data from " + dataFileName + ".");
 
 //        if ("continuous".equalsIgnoreCase(dataTypeName)) {
-//            out.println("Data type = continuous.");
+//            outPrint("Data type = continuous.");
 //        } else if ("discrete".equalsIgnoreCase(dataTypeName)) {
-//            out.println("Data type = discrete.");
+//            outPrint("Data type = discrete.");
 //        } else {
 //            throw new IllegalStateException(
 //                    "Data type was expected to be either " +
@@ -412,12 +420,12 @@ public final class TetradCmd {
                     this.covarianceMatrix = cov;
                 } else {
                     DataSet data = reader.parseTabular(file);
-                    out.println("# variables = " + data.getNumColumns() +
+                    outPrint("# variables = " + data.getNumColumns() +
                             ", # cases = " + data.getNumRows());
                     this.data = data;
                 }
 
-//                System.out.println(data);
+//                systemPrint(data);
 
                 if (initialGraphTxtFilename != null) {
                     initialGraph = GraphUtils.loadGraphTxt(new File(initialGraphTxtFilename));
@@ -451,11 +459,24 @@ public final class TetradCmd {
             DataReader reader = new DataReader();
             char[] chars = writer.toCharArray();
 
-            System.out.println(new String(chars));
+            String x = new String(chars);
+            systemPrint(x);
 
             this.knowledge = reader.parseKnowledge(chars);
         } catch (Exception e) {
             throw new RuntimeException("Couldn't read knowledge.");
+        }
+    }
+
+    private void systemPrint(String x) {
+        if (!silent) {
+            System.out.println(x);
+        }
+    }
+
+    private void outPrint(String x) {
+        if (!silent) {
+            out.println(x);
         }
     }
 
@@ -467,15 +488,6 @@ public final class TetradCmd {
 
         if (knowledgeFileName != null) {
             loadKnowledge();
-        }
-
-
-        try {
-            // LogUtils.getInstance().add(System.out, Level.FINER);
-//            TetradLogger.getInstance().addOutputStream(System.out);
-//            TetradLogger.getInstance().setForceLog(true);
-        } catch (SecurityException e) {
-            // Do nothing. If you rethrow an exception, applets won't work.
         }
 
         if ("pc".equalsIgnoreCase(algorithmName)) {
@@ -522,7 +534,7 @@ public final class TetradCmd {
             RandomUtil.getInstance().setSeed(_seed);
         }
 
-        int _numNodes = -1;
+        int _numNodes;
 
         try {
             _numNodes = Integer.parseInt(numNodes);
@@ -530,7 +542,7 @@ public final class TetradCmd {
             throw new RuntimeException("numNodes must be an integer.");
         }
 
-        int _numEdges = -1;
+        int _numEdges;
 
         try {
             _numEdges = Integer.parseInt(numEdges);
@@ -538,15 +550,21 @@ public final class TetradCmd {
             throw new RuntimeException("numEdges must be an integer.");
         }
 
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < _numNodes; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
         Dag dag;
 
         do {
-            dag = new Dag(GraphUtils.randomGraph(_numNodes, 0, _numEdges, 30,
+            dag = new Dag(GraphUtils.randomGraph(nodes, 0, _numEdges, 30,
                     15, 15, false));
         } while (dag.getNumEdges() < _numEdges);
 
         String xml = GraphUtils.graphToXml(dag);
-        System.out.println(xml);
+        systemPrint(xml);
     }
 
     private void runPc() {
@@ -555,9 +573,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("PC");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("PC");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -577,8 +595,8 @@ public final class TetradCmd {
         Graph resultGraph = pc.search();
 
         // PrintUtil outputStreamPath problem and graphs.
-        out.println("\nResult graph:");
-        out.println(resultGraph);
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
 
         writeGraph(resultGraph);
     }
@@ -589,9 +607,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("PC-Stable");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("PC-Stable");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -611,8 +629,8 @@ public final class TetradCmd {
         Graph resultGraph = pc.search();
 
         // PrintUtil outputStreamPath problem and graphs.
-        out.println("\nResult graph:");
-        out.println(resultGraph);
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
 
         writeGraph(resultGraph);
     }
@@ -623,9 +641,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("GES");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("GES");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -658,8 +676,8 @@ public final class TetradCmd {
         Graph resultGraph = ges.search();
 
         // PrintUtil outputStreamPath problem and graphs.
-        out.println("\nResult graph:");
-        out.println(resultGraph);
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
 
         writeGraph(resultGraph);
     }
@@ -670,9 +688,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("CPC");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("CPC");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -692,8 +710,8 @@ public final class TetradCmd {
         Graph resultGraph = pc.search();
 
         // PrintUtil outputStreamPath problem and graphs.
-        out.println("\nResult graph:");
-        out.println(resultGraph);
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
 
         writeGraph(resultGraph);
     }
@@ -704,9 +722,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("FCI");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("FCI");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -727,8 +745,8 @@ public final class TetradCmd {
             Graph resultGraph = fci.search();
 
             // PrintUtil outputStreamPath problem and graphs.
-            out.println("\nResult graph:");
-            out.println(resultGraph);
+            outPrint("\nResult graph:");
+            outPrint(resultGraph.toString());
 
             writeGraph(resultGraph);
         } else {
@@ -742,8 +760,8 @@ public final class TetradCmd {
             Graph resultGraph = fci.search();
 
             // PrintUtil outputStreamPath problem and graphs.
-            out.println("\nResult graph:");
-            out.println(resultGraph);
+            outPrint("\nResult graph:");
+            outPrint(resultGraph.toString());
 
             writeGraph(resultGraph);
 
@@ -756,9 +774,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("CFCI");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("CFCI");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -779,8 +797,8 @@ public final class TetradCmd {
         Graph resultGraph = fci.search();
 
         // PrintUtil outputStreamPath problem and graphs.
-        out.println("\nResult graph:");
-        out.println(resultGraph);
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
 
         writeGraph(resultGraph);
     }
@@ -791,9 +809,9 @@ public final class TetradCmd {
         }
 
         if (verbose) {
-            System.out.println("CCD");
-            System.out.println(getKnowledge());
-            System.out.println(getVariables());
+            systemPrint("CCD");
+            systemPrint(getKnowledge().toString());
+            systemPrint(getVariables().toString());
 
             TetradLogger.getInstance().addOutputStream(System.out);
 
@@ -812,8 +830,8 @@ public final class TetradCmd {
         Graph resultGraph = ccd.search();
 
         // PrintUtil outputStreamPath problem and graphs.
-        out.println("\nResult graph:");
-        out.println(resultGraph);
+        outPrint("\nResult graph:");
+        outPrint(resultGraph.toString());
 
         writeGraph(resultGraph);
     }
@@ -828,7 +846,7 @@ public final class TetradCmd {
         }
 
         if (!this.data.isDiscrete()) {
-            out.println("Please supply discrete data.");
+            outPrint("Please supply discrete data.");
         }
 
         IndependenceTest independence = new IndTestChiSquare(data, significance);
@@ -837,18 +855,18 @@ public final class TetradCmd {
         cpc.setVerbose(verbose);
         Graph pattern = cpc.search();
 
-        out.println("Found this pattern: " + pattern);
+        outPrint("Found this pattern: " + pattern);
 
         Dag dag = new Dag(SearchGraphUtils.dagFromPattern(pattern));
 
-        out.println("Chose this DAG: " + dag);
+        outPrint("Chose this DAG: " + dag);
 
         BayesPm pm = new BayesPm(dag);
 
         MlBayesEstimator est = new MlBayesEstimator();
         BayesIm im = est.estimate(pm, data);
 
-        out.println("Estimated IM: " + im);
+        outPrint("Estimated IM: " + im);
 
     }
 
@@ -857,13 +875,13 @@ public final class TetradCmd {
 
         if (this.data != null) {
             fofc = new FindOneFactorClusters(this.data,
-                    this.testType, significance);
+                    this.testType, FindOneFactorClusters.Algorithm.GAP, significance);
             if (!this.data.isContinuous()) {
-                out.println("Please supply continuous data.");
+                outPrint("Please supply continuous data.");
             }
         } else if (this.covarianceMatrix != null) {
             fofc = new FindOneFactorClusters(this.covarianceMatrix,
-                    this.testType, significance);
+                    this.testType, FindOneFactorClusters.Algorithm.GAP, significance);
         } else {
             throw new IllegalStateException("Data did not load correctly.");
         }
@@ -871,10 +889,10 @@ public final class TetradCmd {
         fofc.search();
         List<List<Node>> clusters = fofc.getClusters();
 
-        System.out.println("Clusters:");
+        systemPrint("Clusters:");
 
         for (int i = 0; i < clusters.size(); i++) {
-            System.out.println((i + 1) + ": " + clusters.get(i));
+            systemPrint((i + 1) + ": " + clusters.get(i));
         }
     }
 
@@ -926,26 +944,26 @@ public final class TetradCmd {
         return independence;
     }
 
-    private Level convertToLevel(String level) {
-        if ("severe".equalsIgnoreCase(level)) {
-            return Level.SEVERE;
-        } else if ("warning".equalsIgnoreCase(level)) {
-            return Level.WARNING;
-        } else if ("info".equalsIgnoreCase(level)) {
-            return Level.INFO;
-        } else if ("config".equalsIgnoreCase(level)) {
-            return Level.CONFIG;
-        } else if ("fine".equalsIgnoreCase(level)) {
-            return Level.FINE;
-        } else if ("finer".equalsIgnoreCase(level)) {
-            return Level.FINER;
-        } else if ("finest".equalsIgnoreCase(level)) {
-            return Level.FINEST;
-        }
-
-        throw new IllegalArgumentException("Level must be one of 'Severe', " +
-                "'Warning', 'Info', 'Config', 'Fine', 'Finer', 'Finest'.");
-    }
+//    private Level convertToLevel(String level) {
+//        if ("severe".equalsIgnoreCase(level)) {
+//            return Level.SEVERE;
+//        } else if ("warning".equalsIgnoreCase(level)) {
+//            return Level.WARNING;
+//        } else if ("info".equalsIgnoreCase(level)) {
+//            return Level.INFO;
+//        } else if ("config".equalsIgnoreCase(level)) {
+//            return Level.CONFIG;
+//        } else if ("fine".equalsIgnoreCase(level)) {
+//            return Level.FINE;
+//        } else if ("finer".equalsIgnoreCase(level)) {
+//            return Level.FINER;
+//        } else if ("finest".equalsIgnoreCase(level)) {
+//            return Level.FINEST;
+//        }
+//
+//        throw new IllegalArgumentException("Level must be one of 'Severe', " +
+//                "'Warning', 'Info', 'Config', 'Fine', 'Finer', 'Finest'.");
+//    }
 
     public static void main(final String[] argv) {
         new TetradCmd(argv);
@@ -959,7 +977,7 @@ public final class TetradCmd {
         return knowledge;
     }
 
-    public List<Node> getVariables() {
+    private List<Node> getVariables() {
         if (data != null) {
             return data.getVariables();
         } else if (covarianceMatrix != null) {

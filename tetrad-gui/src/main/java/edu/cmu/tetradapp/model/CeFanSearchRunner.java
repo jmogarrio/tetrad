@@ -93,7 +93,6 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static CeFanSearchRunner serializableInstance() {
@@ -155,7 +154,6 @@ public class CeFanSearchRunner extends AbstractAlgorithmRunner
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
-     * @param node
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<List<Triple>>();

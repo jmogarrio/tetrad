@@ -215,7 +215,6 @@ public class Jcpc implements GraphSearch {
         LOOP:
         while (++count < getMaxIterations()) {
             TetradLogger.getInstance().log("info", "Round = " + (count + 1));
-            System.out.println("Round = " + (count + 1));
             numAdded = 0;
             numRemoved = 0;
             int index = 0;
@@ -231,7 +230,6 @@ public class Jcpc implements GraphSearch {
 
                     if (index % 10000 == 0) {
                         TetradLogger.getInstance().log("info", index + " of " + numEdges);
-                        System.out.println(index + " of " + numEdges);
                     }
 
                     tryAddingEdge(test, graph, nodes, graph, i, j);
@@ -259,19 +257,14 @@ public class Jcpc implements GraphSearch {
                 for (Edge edge : graph.getEdges()) {
                     if (++indexBackwards % 10000 == 0) {
                         TetradLogger.getInstance().log("info", index + " of " + numEdgesBackwards);
-                        System.out.println(index + " of " + numEdgesBackwards);
                     }
 
                     tryRemovingEdge(test, graph, graph, edge);
                 }
             }
 
-            System.out.println("Num added = " + numAdded);
-            System.out.println("Num removed = " + numRemoved);
             TetradLogger.getInstance().log("info", "Num added = " + numAdded);
             TetradLogger.getInstance().log("info", "Num removed = " + numRemoved);
-
-            System.out.println("(Reorienting...)");
 
             int numErrors = numAdded + numRemoved;
 
@@ -288,7 +281,6 @@ public class Jcpc implements GraphSearch {
 
             for (int i = graphs.size() - 2; i >= 0; i--) {
                 if (graphs.get(graphs.size() - 1).equals(graphs.get(i))) {
-                    System.out.println("Recognized previous graph.");
                     outGraph = graph1;
                     break LOOP;
                 }
@@ -410,32 +402,32 @@ public class Jcpc implements GraphSearch {
         return null;
     }
 
-    private List<Node> pathBlockingSet2(IndependenceTest test, Graph graph, Node x, Node y) {
-        Set<Node> boundary = markovBoundaryWithoutXY(graph, x, y);
-
-        ArrayList<Node> _boundary = new ArrayList<Node>(boundary);
-
-        if (!_boundary.contains(y)) {
-            if (test.isIndependent(x, y, _boundary)) {
-                return _boundary;
-            }
-        } else {
-            _boundary.remove(y);
-
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(_boundary.size(), 2);
-            int[] choice;
-
-            while ((choice = gen.next()) != null) {
-                List<Node> cond = GraphUtils.asList(choice, _boundary);
-
-                if (test.isIndependent(x, y, cond)) {
-                    return cond;
-                }
-            }
-        }
-
-        return null;
-    }
+//    private List<Node> pathBlockingSet2(IndependenceTest test, Graph graph, Node x, Node y) {
+//        Set<Node> boundary = markovBoundaryWithoutXY(graph, x, y);
+//
+//        ArrayList<Node> _boundary = new ArrayList<Node>(boundary);
+//
+//        if (!_boundary.contains(y)) {
+//            if (test.isIndependent(x, y, _boundary)) {
+//                return _boundary;
+//            }
+//        } else {
+//            _boundary.remove(y);
+//
+//            DepthChoiceGenerator gen = new DepthChoiceGenerator(_boundary.size(), 2);
+//            int[] choice;
+//
+//            while ((choice = gen.next()) != null) {
+//                List<Node> cond = GraphUtils.asList(choice, _boundary);
+//
+//                if (test.isIndependent(x, y, cond)) {
+//                    return cond;
+//                }
+//            }
+//        }
+//
+//        return null;
+//    }
 
     private List<Node> pathBlockingSetSmall(IndependenceTest test, Graph graph, Node x, Node y) {
         List<Node> adjX = graph.getAdjacentNodes(x);
@@ -496,25 +488,25 @@ public class Jcpc implements GraphSearch {
         return condSet;
     }
 
-    private Set<Node> markovBoundaryWithoutXY(Graph graph, Node x, Node y) {
-        Set<Node> condSet = new HashSet<Node>();
-
-        for (Node b : graph.getAdjacentNodes(x)) {
-            if (b != y) {
-                condSet.add(b);
-
-                if (!graph.isParentOf(b, x)) {
-                    for (Node c : graph.getAdjacentNodes(b)) {
-                        condSet.add(c);
-                    }
-                }
-            }
-        }
-
-        condSet.remove(x);
-
-        return condSet;
-    }
+//    private Set<Node> markovBoundaryWithoutXY(Graph graph, Node x, Node y) {
+//        Set<Node> condSet = new HashSet<Node>();
+//
+//        for (Node b : graph.getAdjacentNodes(x)) {
+//            if (b != y) {
+//                condSet.add(b);
+//
+//                if (!graph.isParentOf(b, x)) {
+//                    for (Node c : graph.getAdjacentNodes(b)) {
+//                        condSet.add(c);
+//                    }
+//                }
+//            }
+//        }
+//
+//        condSet.remove(x);
+//
+//        return condSet;
+//    }
 
 
     private void orientCpc(Graph graph, IKnowledge knowledge, int depth, IndependenceTest test) {
@@ -582,7 +574,6 @@ public class Jcpc implements GraphSearch {
 
                 colliderNodes.add(y);
                 TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
-//                    System.out.println(SearchLogUtils.colliderOrientedMsg(x, y, z));
             } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
                 Triple triple = new Triple(x, y, z);
                 graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());

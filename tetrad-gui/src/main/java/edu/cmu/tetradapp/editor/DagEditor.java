@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
@@ -143,7 +144,7 @@ public final class DagEditor extends JPanel
     }
 
     /**
-     * @return a list of all the SessionNodeWrappers (TetradNodes) and
+     * Returns a list of all the SessionNodeWrappers (TetradNodes) and
      * SessionNodeEdges that are model components for the respective
      * SessionNodes and SessionEdges selected in the workbench. Note that the
      * workbench, not the SessionEditorNodes themselves, keeps track of the
@@ -257,7 +258,6 @@ public final class DagEditor extends JPanel
      */
     private JMenu createEditMenu() {
 
-        // TODO Add Cut and Delete.
         JMenu edit = new JMenu("Edit");
 
         JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
@@ -318,8 +318,7 @@ public final class DagEditor extends JPanel
                     int numTrials = 0;
 
                     if (editor.isRandomForward()) {
-                        dag = GraphUtils.randomGraphRandomForwardEdges(getGraph().getNodes(), editor.getNumLatents(),
-                                editor.getMaxEdges());
+                        dag = GraphUtils.randomGraphRandomForwardEdges(getGraph().getNodes(), editor.getNumLatents(), editor.getMaxEdges(), 30, 15, 15, false);
                         GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
                         HashMap<String, PointXy> layout = GraphUtils.grabLayout(workbench.getGraph().getNodes());
                         GraphUtils.arrangeByLayout(dag, layout);
@@ -331,10 +330,14 @@ public final class DagEditor extends JPanel
                             GraphUtils.arrangeBySourceGraph(dag, getWorkbench().getGraph());
                             GraphUtils.arrangeByLayout(dag, layout);
                         } else {
-                            dag = GraphUtils.randomGraph(editor.getNumNodes(),
-                                    editor.getNumLatents(), editor.getMaxEdges(),
-                                    editor.getMaxDegree(), editor.getMaxIndegree(),
-                                    editor.getMaxOutdegree(), editor.isConnected());
+                            List<Node> nodes = new ArrayList<Node>();
+
+                            for (int i = 0; i < editor.getNumNodes(); i++) {
+                                nodes.add(new ContinuousVariable("X" + (i + 1)));
+                            }
+
+                            dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
+                                    editor.getMaxDegree(), editor.getMaxIndegree(), editor.getMaxOutdegree(), editor.isConnected());
                         }
                     } else if (editor.isChooseFixed()) {
                         do {
@@ -346,10 +349,14 @@ public final class DagEditor extends JPanel
 
                                 GraphUtils.arrangeByLayout(dag, layout);
                             } else {
-                                dag = GraphUtils.randomGraph(editor.getNumNodes(),
-                                        editor.getNumLatents(), editor.getMaxEdges(),
-                                        30, 15, 15, editor.isConnected()
-                                );
+                                List<Node> nodes = new ArrayList<Node>();
+
+                                for (int i = 0; i < editor.getNumNodes(); i++) {
+                                    nodes.add(new ContinuousVariable("X" + (i + 1)));
+                                }
+
+                                dag = GraphUtils.randomGraph(nodes, editor.getNumLatents(), editor.getMaxEdges(),
+                                        30, 15, 15, editor.isConnected());
                             }
                         } while (dag.getNumEdges() < editor.getMaxEdges());
                     }

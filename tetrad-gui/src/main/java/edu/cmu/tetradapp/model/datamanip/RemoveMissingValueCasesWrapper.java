@@ -37,8 +37,6 @@ public class RemoveMissingValueCasesWrapper extends DataWrapper {
 
     /**
      * Constructs the missing value cases wrapper.
-     *
-     * @param data
      */
     public RemoveMissingValueCasesWrapper(DataWrapper data){
         if(data == null){
@@ -60,7 +58,6 @@ public class RemoveMissingValueCasesWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static RemoveMissingValueCasesWrapper serializableInstance() {

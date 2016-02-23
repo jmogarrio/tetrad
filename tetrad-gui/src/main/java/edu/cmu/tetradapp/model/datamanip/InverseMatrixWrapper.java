@@ -41,8 +41,6 @@ public class InverseMatrixWrapper extends DataWrapper {
 
     /**
      * Splits the given data set by collinear columns.
-     *
-     * @param wrapper
      */
     public InverseMatrixWrapper(DataWrapper wrapper) {
         if (wrapper == null) {
@@ -96,7 +94,6 @@ public class InverseMatrixWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {

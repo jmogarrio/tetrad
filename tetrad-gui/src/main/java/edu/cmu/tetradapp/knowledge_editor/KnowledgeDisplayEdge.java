@@ -313,7 +313,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @param node1           the 'from' component.
      * @param mouseTrackPoint the initial value of the mouse track point.
-     * @param type
      * @see #updateTrackPoint
      */
     public KnowledgeDisplayEdge(DisplayNode node1, Point mouseTrackPoint,
@@ -616,8 +615,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * non-overlapping rectangles.  (Should give back null for overlapping
      * rectangles but doesn't always...)
      *
-     * @param comp1
-     * @param comp2
      * @return a point pair which represents the connecting line segment through
      *         the center of each rectangle touching the edge of each.
      */
@@ -882,9 +879,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * the bounds of these two components relative to this new union.
      */
     protected void resetBounds() {
-        // TODO: This should be final since it's called from the constructor
-        // but it's already been overridden. Abstracting an interface
-        // may be the thing to do. jdramsey 5/6/02
         Rectangle node1RelativeBounds, node2RelativeBounds;
 
         switch (this.mode) {

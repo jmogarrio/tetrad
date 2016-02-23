@@ -78,7 +78,7 @@ public class FindOneFactorClustersWithCausalIndicators {
     // independence test.
     private IndependenceTest indTest;
 
-    private DataModel dataModel;
+    private transient DataModel dataModel;
 
     // The depth of the PC search, -2 if the PC search should not be run.
     private List<List<Node>> clusters = new ArrayList<List<Node>>();
@@ -113,7 +113,7 @@ public class FindOneFactorClustersWithCausalIndicators {
 
             if (testType == TestType.TETRAD_DELTA) {
                 deltaTest = new DeltaTetradTest(dataSet);
-                deltaTest.setCacheFourthMoments(false);
+//                deltaTest.setCacheFourthMoments(false);
             }
 
             this.cov = new CovarianceMatrix(dataSet);
@@ -127,7 +127,7 @@ public class FindOneFactorClustersWithCausalIndicators {
 
             if (testType == TestType.TETRAD_DELTA) {
                 deltaTest = new DeltaTetradTest(dataSet);
-                deltaTest.setCacheFourthMoments(false);
+//                deltaTest.setCacheFourthMoments(false);
             }
         }
     }

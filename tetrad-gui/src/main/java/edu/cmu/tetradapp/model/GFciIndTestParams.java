@@ -75,7 +75,6 @@ public class GFciIndTestParams implements IndTestParams {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static GFciIndTestParams serializableInstance() {
@@ -97,8 +96,6 @@ public class GFciIndTestParams implements IndTestParams {
 
     /**
      * Sets the depth for search algorithms that require it.
-     *
-     * @param depth
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -110,8 +107,6 @@ public class GFciIndTestParams implements IndTestParams {
 
     /**
      * @return the depth of the search.
-     *
-     * @return depth
      */
     public int getDepth() {
         return this.depth;

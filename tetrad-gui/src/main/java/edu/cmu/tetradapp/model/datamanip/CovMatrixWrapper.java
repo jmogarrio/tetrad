@@ -41,8 +41,6 @@ public class CovMatrixWrapper extends DataWrapper {
 
     /**
      * Splits the given data set by collinear columns.
-     *
-     * @param wrapper
      */
     public CovMatrixWrapper(DataWrapper wrapper) {
         if (wrapper == null) {
@@ -116,7 +114,6 @@ public class CovMatrixWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {

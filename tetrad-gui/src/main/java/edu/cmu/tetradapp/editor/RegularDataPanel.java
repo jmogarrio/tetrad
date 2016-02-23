@@ -47,7 +47,7 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 final class RegularDataPanel extends JPanel {
-    private DataModel[] dataModels;
+    private transient DataModel[] dataModels;
 
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
@@ -846,7 +846,6 @@ final class RegularDataPanel extends JPanel {
             tabbedPane.setSelectedIndex(1);
 
             DataReader reader = new DataReader();
-            reader.setLogEmptyTokens(logEmptyTokens.isSelected());
 
             reader.setCommentMarker(getCommentString());
             reader.setDelimiter(getDelimiterType());

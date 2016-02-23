@@ -41,8 +41,6 @@ public class StandardizeWrapper extends DataWrapper {
     /**
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
-     *
-     * @param data
      */
     public StandardizeWrapper(DataWrapper data) {
         if (data == null) {
@@ -62,7 +60,6 @@ public class StandardizeWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static StandardizeWrapper serializableInstance() {

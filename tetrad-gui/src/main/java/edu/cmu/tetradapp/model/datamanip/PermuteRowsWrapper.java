@@ -37,8 +37,6 @@ public class PermuteRowsWrapper extends DataWrapper {
 
     /**
      * Constructs the wrapper given some data and the params.
-     *
-     * @param data
      */
     public PermuteRowsWrapper(DataWrapper data) {
         if (data == null) {
@@ -59,7 +57,6 @@ public class PermuteRowsWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {

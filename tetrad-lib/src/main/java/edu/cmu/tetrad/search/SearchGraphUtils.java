@@ -1130,8 +1130,6 @@ public final class SearchGraphUtils {
 
     /**
      * Get a graph and direct only the unshielded colliders.
-     *
-     * @return the child nodes of unshielded colliders.
      */
     public static void basicPattern(Graph graph, boolean orientInPlace) {
         Set<Edge> undirectedEdges = new HashSet<Edge>();
@@ -1511,7 +1509,6 @@ public final class SearchGraphUtils {
      * @param d             a set of vertices (intuitively to be used in tests of legality, for example, the set of
      *                      ancestors of c).
      * @param graph         the graph with respect to which reachability is
-     * @param maxPathLength
      * @return the set of nodes reachable from the given set of initial nodes in the given graph according to the
      * criteria in the given legal pairs object.
      * <p>
@@ -2476,7 +2473,6 @@ public final class SearchGraphUtils {
 //                Node _x = graph.getNode(x.getName());
 //                Node _y = graph.getNode(y.getName());
 
-                // TODO adjust for two cycles.
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = graph.getEdge(x, y);
 
@@ -2597,7 +2593,6 @@ public final class SearchGraphUtils {
 //                Node _x = graph.getNode(x.getName());
 //                Node _y = graph.getNode(y.getName());
 
-                // TODO adjust for two cycles.
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = graph.getEdge(x, y);
 
@@ -2718,7 +2713,6 @@ public final class SearchGraphUtils {
 //                Node _x = graph.getNode(x.getName());
 //                Node _y = graph.getNode(y.getName());
 
-                // TODO adjust for two cycles.
                 Edge edge = trueGraph.getEdge(x, y);
                 Edge _edge = graph.getEdge(x, y);
 
@@ -2950,7 +2944,10 @@ public final class SearchGraphUtils {
     public static int[][] graphComparison(Graph estPattern, Graph truePattern, PrintStream out) {
         GraphUtils.GraphComparison comparison = getGraphComparison(estPattern, truePattern);
 
-        out.println("Adjacencies:");
+        if (out != null) {
+            out.println("Adjacencies:");
+        }
+
         int adjTp = comparison.getAdjCorrect();
         int adjFp = comparison.getAdjFp();
         int adjFn = comparison.getAdjFn();
@@ -2959,12 +2956,17 @@ public final class SearchGraphUtils {
         int arrowptFp = comparison.getArrowptFp();
         int arrowptFn = comparison.getArrowptFn();
 
-        out.println("TP " + adjTp + " FP = " + adjFp + " FN = " + adjFn);
-        out.println("Arrow Orientations:");
-        out.println("TP " + arrowptTp + " FP = " + arrowptFp + " FN = " + arrowptFn);
+        if (out != null) {
+            out.println("TP " + adjTp + " FP = " + adjFp + " FN = " + adjFn);
+            out.println("Arrow Orientations:");
+            out.println("TP " + arrowptTp + " FP = " + arrowptFp + " FN = " + arrowptFn);
+        }
 
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estPattern, out);
-        out.println(GraphUtils.edgeMisclassifications(counts));
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(truePattern, estPattern, false);
+
+        if (out != null) {
+            out.println(GraphUtils.edgeMisclassifications(counts));
+        }
 
         double adjRecall = adjTp / (double) (adjTp + adjFn);
 
@@ -2975,11 +2977,13 @@ public final class SearchGraphUtils {
 
         NumberFormat nf = new DecimalFormat("0.0");
 
-        out.println();
-        out.println("AREC\tAPRE\tOREC\tOPRE");
-        out.println(nf.format(adjRecall * 100) + "%\t" + nf.format(adjPrecision * 100)
-                + "%\t" + nf.format(arrowRecall * 100) + "%\t" + nf.format(arrowPrecision * 100) + "%");
-        out.println();
+        if (out != null) {
+            out.println();
+            out.println("AREC\tAPRE\tOREC\tOPRE");
+            out.println(nf.format(adjRecall * 100) + "%\t" + nf.format(adjPrecision * 100)
+                    + "%\t" + nf.format(arrowRecall * 100) + "%\t" + nf.format(arrowPrecision * 100) + "%");
+            out.println();
+        }
 
         return counts;
     }

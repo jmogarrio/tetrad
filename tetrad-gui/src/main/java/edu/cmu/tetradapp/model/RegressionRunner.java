@@ -68,7 +68,7 @@ public class RegressionRunner implements AlgorithmRunner {
      * @serial Cannot be null. Note that the name of this field can't be
      * changed because of serialization. Ugh.
      */
-    private DataModel dataSet;
+    private transient DataModel dataSet;
 
     /**
      * @serial Can be null.
@@ -127,7 +127,6 @@ public class RegressionRunner implements AlgorithmRunner {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static RegressionRunner serializableInstance() {
@@ -297,15 +296,6 @@ public class RegressionRunner implements AlgorithmRunner {
             throw new NullPointerException();
         }
 
-        /*
-        if (targetName == null) {
-            throw new NullPointerException();
-        }
-        */
-
-        if (dataSet == null) {
-            throw new NullPointerException();
-        }
     }
 
     public String getName() {

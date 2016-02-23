@@ -39,9 +39,6 @@ public class SplitCasesWrapper extends DataWrapper {
 
     /**
      * Constructs the wrapper given some data and the params.
-     *
-     * @param data
-     * @param params
      */
     public SplitCasesWrapper(DataWrapper data, SplitCasesParams params) {
         if (data == null) {
@@ -63,7 +60,6 @@ public class SplitCasesWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {

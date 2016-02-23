@@ -72,7 +72,6 @@ final class PossibleDsepCfci {
     /**
      * @param graph             The GaSearchGraph on which to work
      * @param test              The IndependenceChecker to use as an oracle
-     * @param unfaithfulTriples
      */
     public PossibleDsepCfci(Graph graph, IndependenceTest test,
                             Set<Triple> unfaithfulTriples) {
@@ -212,7 +211,7 @@ final class PossibleDsepCfci {
         reachable.remove(node1);
         reachable.remove(node2);
 
-        TetradLogger.getInstance().log("details", "Possible-D-Sep(" + node1 + ", " + node2 + ") = " + reachable);
+//        TetradLogger.getInstance().log("details", "Possible-D-Sep(" + node1 + ", " + node2 + ") = " + reachable);
 
         return reachable;
     }

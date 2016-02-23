@@ -207,7 +207,6 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static SemEstimatorWrapper serializableInstance() {
@@ -295,16 +294,10 @@ public class SemEstimatorWrapper implements SessionModel, GraphSource, Unmarshal
 //        }
     }
 
-    /**
-     * @serial
-     */
     public boolean isMultipleResults() {
         return multipleResults;
     }
 
-    /**
-     * @serial
-     */
     public List<SemEstimator> getMultipleResultList() {
         return multipleResultList;
     }

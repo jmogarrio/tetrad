@@ -160,7 +160,6 @@ public class VcpcRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static VcpcRunner serializableInstance() {
@@ -237,7 +236,6 @@ public class VcpcRunner extends AbstractAlgorithmRunner
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
-     * @param node
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<List<Triple>>();

@@ -21,6 +21,9 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.Clusters;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BpcAlgorithmType;
 import edu.cmu.tetrad.search.TestType;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -80,7 +83,6 @@ public class BuildPureClustersIndTestParams implements MimIndTestParams {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static BuildPureClustersIndTestParams serializableInstance() {
@@ -128,6 +130,21 @@ public class BuildPureClustersIndTestParams implements MimIndTestParams {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public Graph getSourceGraph() {
+        return null;
+    }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return null;
+    }
+
+    @Override
+    public Clusters getClusters() {
+        return null;
+    }
+
     public void setVarNames(List<String> varNames) {
         this.varNames = varNames;
     }
@@ -155,9 +172,6 @@ public class BuildPureClustersIndTestParams implements MimIndTestParams {
         }
     }
 
-    /**
-     * @serial
-     */
     public BpcAlgorithmType getAlgorithmType() {
         return algorithmType;
     }

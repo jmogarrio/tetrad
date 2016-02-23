@@ -21,44 +21,42 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.test.TestEdgeListGraph;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
 
 import java.util.*;
 
 import static java.lang.Math.log;
 import static java.lang.Math.pow;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
- * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the Graph interface.
- *
  * @author Joseph Ramsey
  */
-public final class TestSearchGraph extends TestCase {
-
-    /**
-     * Standard constructor for JUnit test cases.
-     */
-    public TestSearchGraph(String name) {
-        super(name);
-    }
+public final class TestSearchGraph {
 
     /**
      * Tests to see if d separation facts are symmetric.
      */
+    @Test
     public void testDSeparation() {
-        EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections(new Dag(GraphUtils.randomGraph(7, 0, 7, 30, 15, 15, true)));
-        System.out.println(graph);
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 7; i1++) {
+            nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections(new Dag(GraphUtils.randomGraph(nodes1, 0, 7,
+                30, 15, 15, true)));
 
         List<Node> nodes = graph.getNodes();
 
@@ -96,8 +94,16 @@ public final class TestSearchGraph extends TestCase {
     /**
      * Tests to see if d separation facts are symmetric.
      */
+    @Test
     public void testDSeparation2() {
-        EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections(new Dag(GraphUtils.randomGraph(7, 0, 14, 30, 15, 15, true)));
+        List<Node> nodes1 = new ArrayList<Node>();
+
+        for (int i1 = 0; i1 < 7; i1++) {
+            nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
+        }
+
+        EdgeListGraphSingleConnections graph = new EdgeListGraphSingleConnections(new Dag(GraphUtils.randomGraph(nodes1, 0, 14,
+                30, 15, 15, true)));
 
         List<Node> nodes = graph.getNodes();
 
@@ -160,8 +166,14 @@ public final class TestSearchGraph extends TestCase {
     }
 
     public void rtestDSeparation4() {
-        Graph graph = new Dag(GraphUtils.randomGraph(100, 20, 100, 5,
-                5, 5, false));
+        List<Node> nodes = new ArrayList<Node>();
+
+        for (int i = 0; i < 100; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 20, 100,
+                5, 5, 5, false));
 
         long start, stop;
         int depth = -1;
@@ -421,17 +433,6 @@ public final class TestSearchGraph extends TestCase {
         }
 
         return total / (double) count;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestEdgeListGraph.class);
     }
 }
 

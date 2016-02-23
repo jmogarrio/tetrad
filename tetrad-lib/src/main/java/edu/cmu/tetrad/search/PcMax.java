@@ -40,7 +40,6 @@ import java.util.*;
  * set, see Chris Meek (1995), "Causal inference and causal explanation with background knowledge."
  *
  * @author Joseph Ramsey.
- * @deprecated
  */
 public class PcMax implements GraphSearch {
 
@@ -57,7 +56,7 @@ public class PcMax implements GraphSearch {
     /**
      * The maximum number of nodes conditioned on in the search. The default it 1000.
      */
-    private int depth = 1000;
+    private int depth = -1;
 
     /**
      * The graph that's constructed during the search.
@@ -226,44 +225,13 @@ public class PcMax implements GraphSearch {
 
         SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
 
-//        independenceTest = new ProbabilisticMAPIndependence((DataSet) independenceTest.getData());
-
         SepsetsMaxPValue sepsetProducer = new SepsetsMaxPValue(graph, independenceTest, null, getDepth());
-//        sepsetProducer.setDsep(dsep);
 
         addColliders(graph, sepsetProducer, knowledge);
 
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
         rules.orientImplied(graph);
-
-//        Graph pattern = new EdgeListGraphSingleConnections(graph);
-//
-//        for (Node x : getNodes()) {
-//            for (Node y : getNodes()) {
-//                if (x == y) continue;
-//
-//                if (!localMarkovIndep(x, y, pattern, independenceTest)) {
-//                    graph.addUndirectedEdge(x, y);
-//                }
-//            }
-//        }
-//
-//        fas = new FasStableConcurrent(getIndependenceTest());
-//        fas.setInitialGraph(new EdgeListGraphSingleConnections(graph));
-//        fas.setKnowledge(getKnowledge());
-//        fas.setDepth(getDepth());
-//        fas.setVerbose(verbose);
-//        graph = fas.search();
-//
-//        sepsetProducer = new SepsetsMaxPValue(graph, independenceTest, null, getDepth());
-//
-//        addColliders(graph, sepsetProducer, knowledge);
-//
-//        rules = new MeekRules();
-//        rules.setKnowledge(knowledge);
-//        rules.orientImplied(graph);
-
 
         this.logger.log("graph", "\nReturning this graph: " + graph);
 
@@ -278,7 +246,7 @@ public class PcMax implements GraphSearch {
 
 
     private void addColliders(Graph graph, final SepsetProducer sepsetProducer, IKnowledge knowledge) {
-        final Map<Triple, Double> collidersPs = findCollidersUsingSepsets(sepsetProducer, graph, verbose, knowledge);
+        final Map<Triple, Double> collidersPs = findCollidersUsingSepsets(sepsetProducer, graph, verbose);
 
         List<Triple> colliders = new ArrayList<>(collidersPs.keySet());
 
@@ -290,20 +258,9 @@ public class PcMax implements GraphSearch {
             }
         });
 
-        if (trueDag != null) {
-            for (Triple collider : colliders) {
-                Node a = collider.getX();
-                Node b = collider.getY();
-                Node c = collider.getZ();
-
-                List<Node> sep = trueDag.getSepset(a, c);
-
-                System.out.println("JJJ " + collider + " collider = " + (sep != null && !sep.contains(b)) +
-                        " p = " + collidersPs.get(collider));
-            }
-        }
-
         for (Triple collider : colliders) {
+//            if (collidersPs.get(collider) < 0.2) continue;
+
             Node a = collider.getX();
             Node b = collider.getY();
             Node c = collider.getZ();
@@ -319,27 +276,13 @@ public class PcMax implements GraphSearch {
         }
     }
 
-    private boolean localMarkovIndep(Node x, Node y, Graph pattern, IndependenceTest test) {
-        List<Node> future = pattern.getDescendants(Collections.singletonList(x));
-        List<Node> boundary = pattern.getAdjacentNodes(x);
-        boundary.removeAll(future);
-        List<Node> closure = new ArrayList<>(boundary);
-        closure.add(x);
-        closure.remove(y);
-        if (future.contains(y) || boundary.contains(y)) return false;
-        return test.isIndependent(x, y, boundary);
-    }
-
-
     /**
      * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-> y <-* z just in
      * case y is in Sepset({x, z}).
      */
-    public Map<Triple, Double> findCollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose, IKnowledge knowledge) {
+    public Map<Triple, Double> findCollidersUsingSepsets(SepsetProducer sepsetProducer, Graph graph, boolean verbose) {
         TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
         Map<Triple, Double> colliders = new HashMap<>();
-
-        System.out.println("Looking for colliders");
 
         List<Node> nodes = graph.getNodes();
 
@@ -370,11 +313,7 @@ public class PcMax implements GraphSearch {
 
                 if (!sepset.contains(b)) {
                     if (verbose) {
-//                        boolean dsep = this.dsep.isIndependent(a, c);
-//                        System.out.println("QQQ p = " + independenceTest.getPValue() + " " + dsep);
-
                         System.out.println("\nCollider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
-
                     }
 
                     colliders.put(new Triple(a, b, c), sepsetProducer.getPValue());
@@ -385,9 +324,6 @@ public class PcMax implements GraphSearch {
         }
 
         TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
-
-        System.out.println("Done finding colliders");
-
         return colliders;
     }
 

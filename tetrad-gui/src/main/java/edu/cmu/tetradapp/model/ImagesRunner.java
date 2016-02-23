@@ -32,6 +32,7 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import javax.xml.crypto.Data;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -269,7 +270,6 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements GraphSource
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static ImagesRunner serializableInstance() {
@@ -284,7 +284,15 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements GraphSource
      * implemented in the extending class.
      */
     public void execute() {
-        DataModelList list = getDataModelList();
+        DataModel model = getDataModel();
+
+        if (model instanceof  DataSet || model instanceof  ICovarianceMatrix) {
+            DataModelList list = new DataModelList();
+            list.add(model);
+            model = list;
+        }
+
+        DataModelList list = (DataModelList) model;
 
         for (DataModel dataModel : list) {
             if (!(dataModel instanceof DataSet || dataModel instanceof ICovarianceMatrix)) {
@@ -416,7 +424,6 @@ public class ImagesRunner extends AbstractAlgorithmRunner implements GraphSource
     }
 
     /**
-     * @param node
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {

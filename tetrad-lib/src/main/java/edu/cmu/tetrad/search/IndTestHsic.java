@@ -98,6 +98,7 @@ public final class IndTestHsic implements IndependenceTest {
      * Use incomplete Choleksy decomposition to calculate Gram matrices
      */
     private double useIncompleteCholesky = 1e-18;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -320,8 +321,10 @@ public final class IndTestHsic implements IndependenceTest {
                     .dependenceFactMsg(x, y, z, getPValue()));
             return false;
         }
-        TetradLogger.getInstance().log("independencies", SearchLogUtils
-                .independenceFactMsg(x, y, z, getPValue()));
+        if (verbose) {
+            TetradLogger.getInstance().log("independencies", SearchLogUtils
+                    .independenceFactMsg(x, y, z, getPValue()));
+        }
         return true;
     }
 
@@ -331,7 +334,6 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Ky centralized Gram matrix for Y
      * @param Kx centralized Gram matrix for X
      * @param m  sample size
-     * @return
      */
     public double empiricalHSIC(TetradMatrix Ky, TetradMatrix Kx, int m) {
         TetradMatrix Kyx = Ky.times(Kx);
@@ -350,7 +352,6 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Gy Choleksy approximate Gram matrix for Y
      * @param Gx Choleksy approximate Gram matrix for X
      * @param m  sample size
-     * @return
      */
     public double empiricalHSICincompleteCholesky(TetradMatrix Gy, TetradMatrix Gx, int m) {
         // centralized Choleksy
@@ -380,7 +381,6 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Kx centralized Gram matrix for X
      * @param Kz centralized Gram matrix for Z
      * @param m  sample size
-     * @return
      */
     private double empiricalHSIC(TetradMatrix Ky, TetradMatrix Kx, TetradMatrix Kz, int m) {
         TetradMatrix Kyx = Ky.times(Kx);
@@ -428,7 +428,6 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Gx Choleksy approximate Gram matrix for X
      * @param Gz Choleksy approximate Gram matrix for Z
      * @param m  sample size
-     * @return
      */
     public double empiricalHSICincompleteCholesky(TetradMatrix Gy, TetradMatrix Gx, TetradMatrix Gz, int m) {
         // centralize Choleksy
@@ -520,7 +519,6 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Gx Choleksy approximate Gram matrix for X
      * @param Gz Choleksy approximate Gram matrix for Z
      * @param m  sample size
-     * @return
      */
     public double empiricalHSICincompleteCholeskyOLD(TetradMatrix Gy, TetradMatrix Gx, TetradMatrix Gz, int m) {
         // centralize Choleksy
@@ -674,16 +672,10 @@ public final class IndTestHsic implements IndependenceTest {
         return isDependent(x, y, zList);
     }
 
-    /**
-     * @return
-     */
     public double getHsic() {
         return this.hsic;
     }
 
-    /**
-     * @return
-     */
     public double getThreshold() {
         return this.thresh;
     }
@@ -857,6 +849,13 @@ public final class IndTestHsic implements IndependenceTest {
         return trace;
     }
 
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 }
 
 

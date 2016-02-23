@@ -48,17 +48,12 @@ import java.util.List;
 public final class DagToPag {
 
     private final Graph dag;
-    private final IndTestDSep dsep;
+//    private final IndTestDSep dsep;
 
     /*
      * The background knowledge.
      */
     private IKnowledge knowledge = new Knowledge2();
-
-    /**
-     * The variables to search over (optional)
-     */
-    private List<Node> variables = new ArrayList<Node>();
 
     /**
      * Glag for complete rule set, true if should use complete rule set, false otherwise.
@@ -84,9 +79,6 @@ public final class DagToPag {
      */
     public DagToPag(Graph dag) {
         this.dag = dag;
-        this.variables.addAll(dag.getNodes());
-
-        this.dsep = new IndTestDSep(dag);
     }
 
     //========================PUBLIC METHODS==========================//
@@ -94,15 +86,21 @@ public final class DagToPag {
     public Graph convert() {
         logger.log("info", "Starting DAG to PAG.");
 
-        System.out.println("DAG to PAG: Starting adjacency search");
+        if (verbose) {
+            System.out.println("DAG to PAG: Starting adjacency search");
+        }
 
         Graph graph = calcAdjacencyGraph();
 
-        System.out.println("DAG to PAG: Starting collider orientation");
+        if (verbose) {
+            System.out.println("DAG to PAG: Starting collider orientation");
+        }
 
         orientUnshieldedColliders(graph, dag);
 
-        System.out.println("DAG to PAG: Starting final orientation");
+        if (verbose) {
+            System.out.println("DAG to PAG: Starting final orientation");
+        }
 
         final FciOrient fciOrient = new FciOrient(new DagSepsets(dag));
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -110,7 +108,9 @@ public final class DagToPag {
         fciOrient.setMaxPathLength(maxPathLength);
         fciOrient.doFinalOrientation(graph);
 
-        System.out.println("Finishing final orientation");
+        if (verbose) {
+            System.out.println("Finishing final orientation");
+        }
 
         return graph;
     }
@@ -178,7 +178,11 @@ public final class DagToPag {
                     boolean found = foundCollider(dag, a, b, c);
 
                     if (found) {
-                        System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
+
+                        if (verbose) {
+                            System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
+                        }
+
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                     }
@@ -205,10 +209,12 @@ public final class DagToPag {
         if (truePag != null) {
             final boolean defCollider = truePag.isDefCollider(a, b, c);
 
-            if (!found && defCollider) {
-                System.out.println("FOUND COLLIDER FCI");
-            } else if (found && !defCollider) {
-                System.out.println("DIDN'T FIND COLLIDER FCI");
+            if (verbose) {
+                if (!found && defCollider) {
+                    System.out.println("FOUND COLLIDER FCI");
+                } else if (found && !defCollider) {
+                    System.out.println("DIDN'T FIND COLLIDER FCI");
+                }
             }
         }
     }

@@ -82,7 +82,6 @@ public class SemDataParams implements Params, HasCalculatorParams {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see edu.cmu.TestSerialization
      * @see TetradSerializableUtils
      */
     public static SemDataParams serializableInstance() {
@@ -111,7 +110,7 @@ public class SemDataParams implements Params, HasCalculatorParams {
     }
 
 
-    public boolean isIncludeLatents(){
+    public boolean isLatentDataSaved(){
         return this.includeLatents;
     }
 

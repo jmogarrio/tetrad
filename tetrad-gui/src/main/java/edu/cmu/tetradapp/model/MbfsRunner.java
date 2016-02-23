@@ -129,7 +129,6 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	/**
 	 * Generates a simple exemplar of this class to test serialization.
 	 * 
-	 * @see edu.cmu.TestSerialization
 	 * @see TetradSerializableUtils
 	 */
 	public static MbfsRunner serializableInstance() {
@@ -227,7 +226,6 @@ public class MbfsRunner extends AbstractAlgorithmRunner implements
 	/**
 	 * @return the list of triples corresponding to
 	 *         <code>getTripleClassificationNames</code>.
-	 * @param node
 	 */
 	public List<List<Triple>> getTriplesLists(Node node) {
 		List<List<Triple>> triplesList = new ArrayList<List<Triple>>();
