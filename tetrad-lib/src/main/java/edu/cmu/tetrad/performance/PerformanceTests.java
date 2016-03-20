@@ -638,7 +638,6 @@ public class PerformanceTests {
 //        dag = DataGraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges);
         Graph dag = makeDag(numVars, edgesPerNode);
 
-
         List<Node> vars = dag.getNodes();
 
         int[] causalOrdering = new int[vars.size()];
@@ -683,7 +682,9 @@ public class PerformanceTests {
 //        Collections.shuffle(names);
 //        cov = cov.getSubmatrix(names);
 
-        Fgs fgs = new Fgs(cov);
+        SemBicScore score = new SemBicScore(cov, penaltyDiscount);
+
+        Fgs fgs = new Fgs(score);
         fgs.setVerbose(false);
         fgs.setNumPatternsToStore(0);
         fgs.setPenaltyDiscount(penaltyDiscount);
@@ -711,10 +712,10 @@ public class PerformanceTests {
 
         out.println(new Date());
 
-//        out.println("# Vars = " + numVars);
-//        out.println("# Edges = " + numEdges);
+        out.println("# Vars = " + numVars);
+        out.println("# Edges = " + numEdges);
         out.println("# Cases = " + numCases);
-        out.println("Penalty discount = " + (double) numEdges);
+        out.println("Penalty discount = " + penaltyDiscount);
 
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
         out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
@@ -737,18 +738,11 @@ public class PerformanceTests {
 
     public void testFgsDiscrete(int numVars, double edgeFactor, int numCases,
                                 double structurePrior, double samplePrior) {
-//        numVars = 5000;
-//        edgeFactor = 1.0;
-//        numCases = 1000;
-//        structurePrior = .001;
-//        samplePrior = 10;
-
         init(new File("long.FGSDiscrete." + numVars + ".txt"), "Tests performance of the FGS algorithm");
 
         long time1 = System.currentTimeMillis();
 
         Graph dag = makeDag(numVars, edgeFactor);
-//        Graph dag = DataGraphUtils.randomDagPreferentialAttachment(vars, 0, (int) (numVars * edgeFactor), .01);
         printDegreeDistribution(dag, System.out);
 
         System.out.println("Graph done");
@@ -757,7 +751,7 @@ public class PerformanceTests {
 
         System.out.println("Starting simulation");
 
-        BayesPm pm = new BayesPm(dag, 2, 3);
+        BayesPm pm = new BayesPm(dag, 3, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
         DataSet data = im.simulateData(numCases, false);
@@ -769,8 +763,8 @@ public class PerformanceTests {
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
         BDeuScore score = new BDeuScore(data);
-        score.setSamplePrior(1);
-        score.setStructurePrior(0.1);
+        score.setSamplePrior(samplePrior);
+        score.setStructurePrior(structurePrior);
 
         long time3 = System.currentTimeMillis();
 
@@ -782,18 +776,12 @@ public class PerformanceTests {
         fgs.setOut(out);
         fgs.setFaithfulnessAssumed(true);
         fgs.setDepth(3);
-//        fgs.setNumProcessors(4);
-
-//        IKnowledge knowledge = new Knowledge2();
-//        knowledge.setForbidden("X1", "X2");
 
         System.out.println("\nStarting FGS");
 
         Graph estPattern = fgs.search();
 
         System.out.println("Done with FGS");
-
-//        fgs.setKnowledge(knowledge);
 
         out.println(estPattern);
 
@@ -809,8 +797,6 @@ public class PerformanceTests {
 
         out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
         out.println("Elapsed (running FGS) " + (time4 - time3) + " ms");
-
-//        graphComparison(estPattern, SearchGraphUtils.patternForDag(dag));
 
         final Graph truePattern = SearchGraphUtils.patternForDag(dag);
 
@@ -2086,10 +2072,11 @@ public class PerformanceTests {
             } else {
                 throw new IllegalArgumentException("Not a configuration!");
             }
-        } else {
-            new PerformanceTests().printStuffForKlea();
-//            throw new IllegalArgumentException("Not a configuration!");
         }
+//        else {
+//            new PerformanceTests().printStuffForKlea();
+//            throw new IllegalArgumentException("Not a configuration!");
+//        }
 
         System.out.println("Finish");
     }

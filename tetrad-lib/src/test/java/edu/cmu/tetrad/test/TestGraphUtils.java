@@ -21,15 +21,15 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.RandomUtil;
-import junit.framework.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.*;
+import java.text.DecimalFormat;
+import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -254,6 +254,36 @@ public final class TestGraphUtils {
         assertTrue(graph.isDConnectedTo(c, a, Collections.singletonList(b)));
     }
 
+
+    public void test8() {
+        int numNodes = 5;
+
+        for (int i = 0; i < 100000; i++) {
+            Graph graph = GraphUtils.randomGraphRandomForwardEdges(numNodes, 0, numNodes, 10, 10, 10, true);
+
+            List<Node> nodes = graph.getNodes();
+            Node x = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            Node y = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            Node z1 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+            Node z2 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
+
+            if (graph.isDSeparatedFrom(x, y, list(z1)) && graph.isDSeparatedFrom(x, y, list(z2)) &&
+                    !graph.isDSeparatedFrom(x, y, list(z1, z2))) {
+                System.out.println("x = " + x);
+                System.out.println("y = " + y);
+                System.out.println("z1 = " + z1);
+                System.out.println("z2 = " + z2);
+                System.out.println(graph);
+                return;
+            }
+        }
+    }
+
+    private List<Node> list(Node... z) {
+        List<Node> list = new ArrayList<>();
+        Collections.addAll(list, z);
+        return list;
+    }
 }
 
 

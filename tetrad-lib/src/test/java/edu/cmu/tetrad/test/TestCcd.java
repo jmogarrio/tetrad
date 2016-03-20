@@ -51,7 +51,6 @@ public class TestCcd {
     /**
      * From "CcdTester".
      */
-    @Test
     public void testCcd() {
         Node a = new ContinuousVariable("A");
         Node b = new ContinuousVariable("B");
@@ -107,7 +106,7 @@ public class TestCcd {
     /**
      * From CcdTesterC.
      */
-    @Test
+//    @Test
     public void testCcdC() {
 
         Node a = new ContinuousVariable("A");

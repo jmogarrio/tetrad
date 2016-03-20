@@ -24,31 +24,31 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestType;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
 
 /**
- * Stores the parameters needed for the GES search and wizard.
+ * Stub for serialization
  *
- * @author Ricardo Silva
+ * @deprecated
  */
 public final class GesParams implements MeekSearchParams {
     static final long serialVersionUID = 23L;
+
+    public static PcRunner serializableInstance() {
+        return new PcRunner(Dag.serializableInstance(),
+                PcSearchParams.serializableInstance());
+    }
 
     /**
      * @serial Can't be null.
      */
     private IKnowledge knowledge = new Knowledge2();
-
-    /**
-     * @serial Can't be null.
-     */
-    private GesIndTestParams indTestParams;
 
     /**
      * @serial Can be null.
@@ -72,137 +72,69 @@ public final class GesParams implements MeekSearchParams {
     private boolean aggressivelyPreventCycles = false;
     private double complexityPenalty;
 
-    //============================CONSTRUCTORS============================//
-
-    /**
-     * Constructs a new parameter object. Must have a blank constructor.
-     */
-    public GesParams() {
-        this.indTestParams = new GesIndTestParams(this);
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static GesParams serializableInstance() {
-        return new GesParams();
-    }
-
-    //============================PUBLIC METHODS==========================//
-
+    @Override
     public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+        return false;
     }
 
+    @Override
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+
     }
 
+    @Override
+    public IKnowledge getKnowledge() {
+        return null;
+    }
+
+    @Override
+    public void setKnowledge(IKnowledge knowledge) {
+
+    }
+
+    @Override
     public IndTestParams getIndTestParams() {
-        return this.indTestParams;
+        return null;
     }
 
-    public void setIndTestParams2(IndTestParams indTestParams) {
-        if (!(indTestParams instanceof GesIndTestParams)) {
-            throw new IllegalArgumentException(
-                    "Illegal IndTestParams " + "in GesIndTestParams");
-        }
-        this.indTestParams = (GesIndTestParams) indTestParams;
+    @Override
+    public void setIndTestParams(IndTestParams params) {
+
     }
 
+    @Override
     public List<String> getVarNames() {
-        return this.varNames;
+        return null;
     }
 
+    @Override
     public void setVarNames(List<String> varNames) {
-        this.varNames = varNames;
+
     }
 
+    @Override
     public Graph getSourceGraph() {
-        return this.sourceGraph;
+        return null;
     }
 
+    @Override
     public void setSourceGraph(Graph graph) {
-        this.sourceGraph = graph;
+
     }
 
+    @Override
     public void setIndTestType(IndTestType testType) {
-        this.testType = testType;
+
     }
 
+    @Override
     public IndTestType getIndTestType() {
-        return this.testType;
+        return null;
     }
 
     @Override
     public void setIndependenceFacts(IndependenceFacts facts) {
-        throw new UnsupportedOperationException();
-    }
 
-    //  Wrapping GesIndTestParams...
-
-    public double getSamplePrior() {
-        return indTestParams.getSamplePrior();
-    }
-
-    public void setCellPrior(double cellPrior) {
-        indTestParams.setSamplePrior(cellPrior);
-    }
-
-    public double getStructurePrior() {
-        return indTestParams.getStructurePrior();
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        indTestParams.setStructurePrior(structurePrior);
-    }
-
-    public double getComplexityPenalty() {
-        return indTestParams.getPenaltyDiscount();
-    }
-
-    public void setComplexityPenalty(double complexityPenalty) {
-        indTestParams.setPenaltyDiscount(complexityPenalty);
-    }
-
-    public IKnowledge getKnowledge() {
-        return knowledge.copy();
-    }
-
-    public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException("Cannot set a null knowledge.");
-        }
-
-        this.knowledge = knowledge.copy();
-    }
-
-    /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
-     */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        if (indTestParams == null) {
-            throw new NullPointerException();
-        }
     }
 }
 

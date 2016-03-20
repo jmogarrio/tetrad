@@ -27,10 +27,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
@@ -40,22 +37,13 @@ import java.util.Set;
 public class PcRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, GraphSource {
     static final long serialVersionUID = 23L;
-    private StandardizedSemIm semIm = null;
     private Graph initialGraph = null;
-//    private Pc pc = null;
-
     Set<Edge> pcAdjacent;
     Set<Edge> pcNonadjacent;
     List<Node> pcNodes;
 
 
     //============================CONSTRUCTORS============================//
-
-
-    public PcRunner(StandardizedSemImWrapper semImWrapper, PcSearchParams params) {
-        super(semImWrapper.getGraph(), params);
-        this.semIm = semImWrapper.getStandardizedSemIm();
-    }
 
 
     /**
@@ -100,13 +88,6 @@ public class PcRunner extends AbstractAlgorithmRunner
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
-//    /**
-//     * Constucts a wrapper for the given EdgeListGraph.
-//     */
-//    public PcRunner(GraphSource graphWrapper, PcSearchParams params, KnowledgeBoxModel knowledgeBoxModel) {
-//        super(graphWrapper.getGraph(), params, knowledgeBoxModel);
-//    }
-
     public PcRunner(DagWrapper dagWrapper, PcSearchParams params) {
         super(dagWrapper.getDag(), params);
     }
@@ -141,31 +122,23 @@ public class PcRunner extends AbstractAlgorithmRunner
         return rules;
     }
 
+    @Override
+    public String getAlgorithmName() {
+        return "PC";
+    }
+
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
         IKnowledge knowledge = getParams().getKnowledge();
         int depth = getParams().getIndTestParams().getDepth();
         Graph graph;
-        Pc pc;
-
-        if (semIm != null) {
-            pc = new Pc(new IndTestDSepDiminishingPathStrengths(semIm, getParams().getIndTestParams().getAlpha()));
-            pc.setKnowledge(knowledge);
-            pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
-            pc.setDepth(depth);
-            pc.setInitialGraph(initialGraph);
-            graph = pc.search();
-        }
-        else {
-            pc = new Pc(getIndependenceTest());
-//        PcMax pc = new PcMax(getIndependenceTest());
-            pc.setKnowledge(knowledge);
-            pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
-            pc.setDepth(depth);
-            pc.setInitialGraph(initialGraph);
-            graph = pc.search();
-        }
+        Pc pc = new Pc(getIndependenceTest());
+        pc.setKnowledge(knowledge);
+        pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
+        pc.setDepth(depth);
+        pc.setInitialGraph(initialGraph);
+        graph = pc.search();
 
         System.out.println(graph);
 
@@ -230,6 +203,13 @@ public class PcRunner extends AbstractAlgorithmRunner
         return true;
     }
 
+    @Override
+    public Map<String, String> getParamSettings() {
+        super.getParamSettings();
+        paramSettings.put("Test", getIndependenceTest().toString());
+        return paramSettings;
+    }
+
     //========================== Private Methods ===============================//
 
     private boolean isAggressivelyPreventCycles() {
@@ -246,6 +226,7 @@ public class PcRunner extends AbstractAlgorithmRunner
         pcNodes = getGraph().getNodes();
     }
 }
+
 
 
 

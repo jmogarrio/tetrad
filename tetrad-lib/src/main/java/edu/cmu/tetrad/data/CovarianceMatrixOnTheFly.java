@@ -168,14 +168,20 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
                     for (int i = from; i < to; i++) {
                         double d = 0.0D;
 
+                        int count = 0;
+
                         double[] v1 = vectors[i];
 
                         for (int k = 0; k < sampleSize; ++k) {
-                            d += v1[k] * v1[k];
+                            if (!Double.isNaN(v1[k])) {
+                                d += v1[k] * v1[k];
+                                count++;
+                            }
                         }
 
                         double v = d;
-                        v /= (sampleSize - 1);
+//                        v /= (sampleSize - 1);
+                        v /= (count - 1);
 
                         variances[i] = v;
 
@@ -339,13 +345,18 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         double[] v1 = vectors[i];
         double[] v2 = vectors[j];
+        int count = 0;
 
         for (int k = 0; k < sampleSize; ++k) {
-            d += v1[k] * v2[k];
+            if (!Double.isNaN(v1[k]) && !Double.isNaN(v2[k])) {
+                d += v1[k] * v2[k];
+                count++;
+            }
         }
 
         double v = d;
-        v /= (sampleSize - 1);
+//        v /= (sampleSize - 1);
+        v /= (count - 1);
         return v;
     }
 
@@ -445,7 +456,13 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
-        this.variables = variables;
+        for (int i = 0; i < variables.size(); i++) {
+            if (!variables.get(i).getName().equals(variables.get(i).getName())) {
+                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
+                        "as the variable being substituted for it.");
+            }
+            this.variables = variables;
+        }
     }
 
     @Override
