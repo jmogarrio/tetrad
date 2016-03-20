@@ -289,7 +289,7 @@ public final class GFci implements GraphSearch{
         long startTriangletime = System.currentTimeMillis();
         SepsetProducer triangleSepsets;
 
-        triangleSepsets = new SepsetsMaxPValue(gesGraph, getIndependenceTest(), null, depth);
+        triangleSepsets = new SepsetsMaxScore(gesGraph, getIndependenceTest(), null, depth);
 
 
         // Look in triangles
@@ -304,7 +304,7 @@ public final class GFci implements GraphSearch{
             if (!j.isEmpty()) {
                 triangleSepsets.getSepset(i, k);
 
-                if (triangleSepsets.getPValue() > getIndependenceTest().getAlpha()) {
+                if (triangleSepsets.getScore() > getIndependenceTest().getAlpha()) {
                     graph.removeEdge(edge);
                 }
             }
@@ -323,7 +323,7 @@ public final class GFci implements GraphSearch{
         if (conservative)
             colliderSepsets = new SepsetsConservative(graph, independenceTest, null, depth);
         else
-            colliderSepsets = new SepsetsMaxPValue(graph, independenceTest, null, depth);
+            colliderSepsets = new SepsetsMaxScore(graph, independenceTest, null, depth);
 
 
         // Step CI C, modified collider orientation step for FCI-GES due to Spirtes.
